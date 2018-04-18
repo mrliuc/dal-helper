@@ -17,6 +17,12 @@ dalHelper.setConfig({
     }
 });
 
+
+dalHelper.exec('select 1', {}, function(err, results) {
+    console.log(results);
+})
+
+return;
 //测试select------------------------------------------------------------------------------------------------------
 var option = {
     columns: ['Account', 'Mobile'],

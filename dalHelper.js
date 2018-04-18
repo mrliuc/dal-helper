@@ -4,7 +4,9 @@ var mssql = require('./db/mssql-helper');
 
 var dal = {};
 
-dal.setConfig = mssql.setConfig;
+Object.assign(dal, mssql);
+
+// dal.setConfig = mssql.setConfig;
 
 
 function doAction(sql, param) {
