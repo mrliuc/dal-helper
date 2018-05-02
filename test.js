@@ -18,18 +18,18 @@ dalHelper.setConfig({
 });
 
 
-dalHelper.exec('select 1', {}, function(err, results) {
-    console.log(results);
-})
+// dalHelper.exec('select 1', {}, function(err, results) {
+//     console.log(results);
+// })
 
-return;
+// return;
 //测试select------------------------------------------------------------------------------------------------------
-var option = {
-    columns: ['Account', 'Mobile'],
-    table: 'UserAccount',
-    whereAnd: { Id: [1, 2] },
-    whereOr: {}
-};
+// var option = {
+//     columns: ['Account', 'Mobile'],
+//     table: 'UserAccount',
+//     whereAnd: { Id: [1, 2] },
+//     whereOr: {}
+// };
 
 //var option = {
 //    columns: ['Id', 'OrderStatus'],
@@ -53,30 +53,30 @@ var option = {
 //     console.log(JSON.stringify(results))
 // });
 
-dalHelper.dmls([{
-    DMLType: dalHelper.DMLType.SELECT,
-    columns: ['Account', 'Mobile'],
-    table: 'UserAccount',
-    whereAnd: { Id: [1, 2] },
-}, {
-    DMLType: dalHelper.DMLType.SELECT,
-    columns: ['Account', 'Mobile'],
-    table: 'UserAccount',
-    whereAnd: { Id: [1, 2] },
-}]).exec(function(err, results) {
-    console.log(results);
-    // console.log(results.recordsets[0][0]);
+// dalHelper.dmls([{
+//     DMLType: dalHelper.DMLType.SELECT,
+//     columns: ['Account', 'Mobile'],
+//     table: 'UserAccount',
+//     whereAnd: { Id: [1, 2] },
+// }, {
+//     DMLType: dalHelper.DMLType.SELECT,
+//     columns: ['Account', 'Mobile'],
+//     table: 'UserAccount',
+//     whereAnd: { Id: [1, 2] },
+// }]).exec(function(err, results) {
+//     console.log(results);
+//     // console.log(results.recordsets[0][0]);
 
-    console.log(JSON.stringify(results))
-});
+//     console.log(JSON.stringify(results))
+// });
 
 //测试insert------------------------------------------------------------------------------------------------------
 
-var option = {
-    data: { Name: "wwwwwwwwww" },
-    table: 'Test',
-    identity: true
-};
+// var option = {
+//     data: { Name: "wwwwwwwwww" },
+//     table: 'Test',
+//     identity: true
+// };
 
 //dalHelper.insert(option).exec(function (err, results,affected) {
 //    console.log(results);
@@ -140,3 +140,15 @@ var option = {
 //    console.log(results);
 //    console.log(affected);
 //});
+
+
+var option = {
+    table: 'UserAccount',
+    whereAnd: [
+        ['Id', 100, '<']
+    ]
+}
+
+dalHelper.count(option).exec(function(err, results) {
+    console.log(results)
+})

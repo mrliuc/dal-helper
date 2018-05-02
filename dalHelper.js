@@ -46,8 +46,12 @@ function getWheres(whereAnd, whereOr, param, index) {
                     if (name.indexOf('@') === 0) {
                         whereAnds.push(' [' + name.replace(/@/g, '') + '] ' + op + +' ' + val);
                     } else {
-                        whereAnds.push(' [' + name + '] ' + op + ' @wa_' + name + index + i + ' ');
-                        param['wa_' + name + index + i] = val;
+                        if (val === null) {
+                            whereAnds.push(' [' + name + '] ' + op + ' null ');
+                        } else {
+                            whereAnds.push(' [' + name + '] ' + op + ' @wa_' + name + index + i + ' ');
+                            param['wa_' + name + index + i] = val;
+                        }
                     }
                 }
 
@@ -210,7 +214,9 @@ var DMLType = {
     UPDATE: 2,
     DELETE: 3,
     SELECT: 4,
-    UPDATE_INSERT: 5
+    UPDATE_INSERT: 5,
+    COUNT: 6
+
 };
 
 //var CONDType = {
@@ -367,6 +373,18 @@ function dmls(options) {
 
                 }
                 break;
+            case DMLType.COUNT:
+                {
+                    sql += ' select count(1) Count from [' + option.table + '] with(nolock)';
+
+                    let wheres = getWheres(option.whereAnd, option.whereOr, param, index);
+
+                    if (wheres.length > 0) {
+                        sql += ' where ' + wheres.join(' and ');
+                    }
+
+                    sql += ';';
+                }
         }
 
         if (option.affected !== undefined) {
@@ -426,6 +444,10 @@ dal.delete = function(option) {
     return dmls([option]);
 };
 
+dal.count = function(option) {
+    option.DMLType = DMLType.COUNT;
+    return dmls([option]);
+};
 
 dal.sql = function(option) {
     return new doAction(option.sql, option.param);
