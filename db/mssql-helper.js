@@ -43,7 +43,12 @@ var makeParams = function(args, callback) {
             //console.log(typeof inputParams[key]);
             switch (typeof args.inputParams[key]) {
                 case "string":
-                    args.ps.input(key, mssql.NVarChar(args.inputParams[key].length + 50), args.inputParams[key]);
+                    if (args.inputParams[key].length > 2000) {
+                        args.ps.input(key, mssql.NText, args.inputParams[key]);
+
+                    } else {
+                        args.ps.input(key, mssql.NVarChar(args.inputParams[key].length + 50), args.inputParams[key]);
+                    }
                     // console.log( params[key]);
 
                     break;
