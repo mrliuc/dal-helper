@@ -60,8 +60,8 @@ function getWheres(whereAnd, whereOr, param, index) {
 
             });
         } else {
-            Object.keys(whereAnd).forEach(function(key) {
-                var pKey = 'wa_' + key + index + '_End';
+            Object.keys(whereAnd).forEach(function(key, i) {
+                var pKey = 'wa_' + key + index + i + '_End';
 
                 if (whereAnd[key] instanceof Array) {
                     if (whereAnd[key].length === 1) {
@@ -116,7 +116,7 @@ function getWheres(whereAnd, whereOr, param, index) {
         } else {
             Object.keys(whereOr).forEach(function(key, i) {
 
-                var pKey = 'wo_' + name + index + i + '_End';
+                var pKey = 'wo_' + key + index + i + '_End';
 
                 if (whereOr[key] instanceof Array) {
                     if (whereOr[key].length === 1) {
