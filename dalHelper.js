@@ -33,24 +33,27 @@ function getWheres(whereAnd, whereOr, param, index) {
                 var op = item.length > 2 ? item[2] : '=';
                 var name = item[0];
                 var val = item[1];
+
+                var pKey = 'wa_' + name + index + i + '_End';
+
                 if (val instanceof Array) {
                     if (val.length === 1) {
-                        whereAnds.push(' [' + name + '] ' + op + ' @wa_' + name + index + i);
-                        param['wa_' + name + index + i] = val[0];
+                        whereAnds.push(' [' + name + '] ' + op + ' @' + pKey);
+                        param[pKey] = val[0];
                     } else {
-                        whereAnds.push(' [' + name + '] in (@wa_' + name + index + i + ') ');
-                        param['wa_' + name + index + i] = val;
+                        whereAnds.push(' [' + name + '] in (@' + pKey + ') ');
+                        param[pKey] = val;
                     }
                 } else {
 
                     if (name.indexOf('@') === 0) {
-                        whereAnds.push(' [' + name.replace(/@/g, '') + '] ' + op + +' ' + val);
+                        whereAnds.push(' [' + name.replace(/@/g, '') + '] ' + op + ' ' + val);
                     } else {
                         if (val === null) {
                             whereAnds.push(' [' + name + '] ' + op + ' null ');
                         } else {
-                            whereAnds.push(' [' + name + '] ' + op + ' @wa_' + name + index + i + ' ');
-                            param['wa_' + name + index + i] = val;
+                            whereAnds.push(' [' + name + '] ' + op + ' @' + pKey + ' ');
+                            param[pKey] = val;
                         }
                     }
                 }
@@ -58,21 +61,23 @@ function getWheres(whereAnd, whereOr, param, index) {
             });
         } else {
             Object.keys(whereAnd).forEach(function(key) {
+                var pKey = 'wa_' + key + index + '_End';
+
                 if (whereAnd[key] instanceof Array) {
                     if (whereAnd[key].length === 1) {
-                        whereAnds.push(' [' + key + ']=@wa_' + key + index);
-                        param['wa_' + key + index] = whereAnd[key][0];
+                        whereAnds.push(' [' + key + ']=@' + pKey);
+                        param[pKey] = whereAnd[key][0];
                     } else {
-                        whereAnds.push(' [' + key + '] in (@wa_' + key + index + ') ');
-                        param['wa_' + key + index] = whereAnd[key];
+                        whereAnds.push(' [' + key + '] in (@' + pKey + ') ');
+                        param[pKey] = whereAnd[key];
                     }
                 } else {
 
                     if (key.indexOf('@') === 0) {
                         whereAnds.push(' [' + key.replace(/@/g, '') + ']=' + whereAnd[key]);
                     } else {
-                        whereAnds.push(' [' + key + ']=@wa_' + key + index + ' ');
-                        param['wa_' + key + index] = whereAnd[key];
+                        whereAnds.push(' [' + key + ']=@' + pKey + ' ');
+                        param[pKey] = whereAnd[key];
                     }
                 }
             });
@@ -82,45 +87,51 @@ function getWheres(whereAnd, whereOr, param, index) {
 
     if (whereOr) {
         if (whereOr instanceof Array) {
-            whereOr.forEach(function(item) {
+            whereOr.forEach(function(item, i) {
                 var op = item.length > 2 ? item[2] : '=';
                 var name = item[0];
                 var val = item[1];
+
+                var pKey = 'wo_' + name + index + i + '_End';
+
                 if (val instanceof Array) {
                     if (val.length === 1) {
-                        whereOrs.push(' [' + name + '] ' + op + ' @wo_' + name + index);
-                        param['wo_' + name + index] = val[0];
+                        whereOrs.push(' [' + name + '] ' + op + ' @' + pKey);
+                        param[pKey] = val[0];
                     } else {
-                        whereOrs.push(' [' + name + '] in (@wo_' + name + index + ') ');
-                        param['wo_' + name + index] = val;
+                        whereOrs.push(' [' + name + '] in (@' + pKey + ') ');
+                        param[pKey] = val;
                     }
                 } else {
 
                     if (name.indexOf('@') === 0) {
                         whereOrs.push(' [' + name.replace(/@/g, '') + '] ' + op + ' ' + val);
                     } else {
-                        whereOrs.push(' [' + name + '] ' + op + ' @wo_' + name + index + ' ');
-                        param['wo_' + name + index] = val;
+                        whereOrs.push(' [' + name + '] ' + op + ' @' + pKey + ' ');
+                        param[pKey] = val;
                     }
                 }
 
             });
         } else {
-            Object.keys(whereOr).forEach(function(key) {
+            Object.keys(whereOr).forEach(function(key, i) {
+
+                var pKey = 'wo_' + name + index + i + '_End';
+
                 if (whereOr[key] instanceof Array) {
                     if (whereOr[key].length === 1) {
-                        whereOrs.push(' [' + key + ']=@wo_' + key + index);
-                        param['wo_' + key + index] = whereOr[key][0];
+                        whereOrs.push(' [' + key + ']=@' + pKey);
+                        param[pKey] = whereOr[key][0];
                     } else {
-                        whereOrs.push(' [' + key + '] in (@wo_' + key + index + ')');
-                        param['wo_' + key + index] = whereOr[key];
+                        whereOrs.push(' [' + key + '] in (@' + pKey + ')');
+                        param[pKey] = whereOr[key];
                     }
                 } else {
                     if (key.indexOf('@') === 0) {
                         whereOrs.push(' [' + key.replace(/@/g, '') + ']=' + whereOr[key]);
                     } else {
-                        whereOrs.push(' [' + key + ']=@wo_' + key + index);
-                        param['wo_' + key + index] = whereOr[key];
+                        whereOrs.push(' [' + key + ']=@' + pKey);
+                        param[pKey] = whereOr[key];
                     }
                 }
             });
