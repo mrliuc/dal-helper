@@ -99,7 +99,7 @@ var makeParams = function(args, callback) {
                                 break;
 
                             default:
-                                throw "sql参数异常:" + key + ':' + JSON.stringify(args.inputParams[key]);
+                                throw new Error("sql参数异常:" + key + ':' + JSON.stringify(args.inputParams[key]) + '    SQL:' + args.sql);
                         }
                         var reg = new RegExp('@' + key, "g");
                         args.sql = tempSql + args.sql.replace(reg, 'select v from ' + tableName);

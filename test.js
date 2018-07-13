@@ -12,7 +12,7 @@ dalHelper.setConfig({
     },
     pool: {
         min: 0,
-        max: 1,
+        max: 10,
         idleTimeoutMillis: 3000
     }
 });
@@ -75,13 +75,13 @@ dalHelper.setConfig({
 // var option = {
 //     data: { Name: "wwwwwwwwww" },
 //     table: 'Test',
-//     identity: true
+//     // identity: true
 // };
 
-//dalHelper.insert(option).exec(function (err, results,affected) {
-//    console.log(results);
-//    console.log(affected);
-//});
+// dalHelper.insert(option).exec(function(err, results, affected) {
+//     console.log(results);
+//     console.log(affected);
+// });
 
 // dalHelper.dmls([
 
@@ -130,25 +130,26 @@ dalHelper.setConfig({
 
 
 //测试delete------------------------------------------------------------------------------------------------------
-//var option = {
-//    table: 'Test',
-//  //  whereAnd: { Id: 1 },
-//    whereOr: { Id: 2, Name: '1231' }
-//};
+// var option = {
+//     table: 'Test',
+//     //  whereAnd: { Id: 1 },
+//     whereOr: { Id: 2, Name: '1231' }
+// };
 
-//dalHelper.delete(option).exec(function (err, results, affected) {
-//    console.log(results);
-//    console.log(affected);
-//});
+// dalHelper.delete(option).exec(function(err, results, affected) {
+//     console.log(results);
+//     console.log(affected);
+// });
 
 
 var option = {
     table: 'UserAccount',
     whereAnd: [
-        ['Id', 100, '<']
+        ['Id', 100, '<'],
+        // ['Name', []]
     ]
 }
 
-dalHelper.count(option).exec(function(err, results) {
-    console.log(results)
+dalHelper.select(option).exec(function(err, results) {
+    console.log(JSON.stringify(results))
 })
