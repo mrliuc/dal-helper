@@ -99,7 +99,7 @@ var makeParams = function(args, callback) {
                                 break;
 
                             default:
-                                throw new Error("sql参数异常:" + key + ':' + JSON.stringify(args.inputParams[key]) + '    SQL:' + args.sql);
+                                args.err = "sql参数异常:" + key + ':' + JSON.stringify(args.inputParams[key]) + '    SQL:' + args.sql;
                         }
                         var reg = new RegExp('@' + key, "g");
                         args.sql = tempSql + args.sql.replace(reg, 'select v from ' + tableName);
@@ -154,7 +154,7 @@ var makeParams = function(args, callback) {
 
     }
 
-    callback(null, args);
+    callback(args.err, args);
 };
 //transactionBegin
 var transactionBegin = function(args, callback) {
@@ -176,7 +176,8 @@ var psExecute = function(args, callback) {
     args.ps.execute(params, function(err, result, affected) {
         args.result = result;
         args.affected = affected;
-        callback(err, args);
+        args.err = err;
+        callback(null, args);
     });
 };
 
@@ -198,46 +199,35 @@ var makeOutParams = function(args, callback) {
     callback(null, args);
 };
 
-var transactionEnd = function(err, transaction) {
+var transactionEnd = function(args, callback) {
+    var transaction = args.transaction;
 
-    if (transaction) {
-
-        if (err) {
-
-            transaction.rollback(function(err) {
-                if (err) {
-                    throw err;
-                }
-            });
-
-            throw err;
-        }
-
-        transaction.commit(function(err) {
-            if (err) {
-                throw err;
-            }
+    if (args.err) {
+        // if(args.err.code==) 
+        // console.log(args.err.code)
+        transaction.rollback(function(err) {
+            return callback(err, args)
         });
+        return;
     }
+
+    transaction.commit(function(err) {
+        return callback(err, args)
+    });
 };
+
 var asyncCallback = function(err, args) {
+    if (err || args.err) {
+        console.error(args.err);
+        console.error(args.sql);
+        console.error(args.inputParams);
+    }
 
     if (err) {
-        if (args.ps) {
-            psUnprepare(args, function() {});
-        }
-        console.log(err);
-        // logger.error(err);
-        // logger.error(args.sql);
-        // logger.error(args.inputParams);
-        // logger.error(args.outputParams);
-
         throw err;
     }
 
-    transactionEnd(err, args.transaction);
-
-    args.callBack(null, args.result, args.outputParams ? args.outputParams : args.affected);
+    args.callBack(args.err, args.result, args.outputParams ? args.outputParams : args.affected);
 };
 
 //执行sql,返回数据.  
@@ -254,7 +244,8 @@ db.query = function(sql, params, callBack) {
         transactionBegin,
         psPrepare,
         psExecute,
-        psUnprepare
+        psUnprepare,
+        transactionEnd
     ], asyncCallback);
 
 };
@@ -272,7 +263,8 @@ db.exec = function(sql, params, callBack) {
         transactionBegin,
         psPrepare,
         psExecute,
-        psUnprepare
+        psUnprepare,
+        transactionEnd
     ], asyncCallback);
 };
 
@@ -292,98 +284,5 @@ db.proc = function(sql, inputParams, outputParams, callBack) {
     ], asyncCallback);
 
 };
-//db.exec("select '1' as a; select '2' as b;", {}, function (err, results) {
 
-//    console.log(results);
-
-//});
-
-//for (let i = 0; i < 1; i++) {
-//    db.query("select '" + i + "' as a; select '" + i +"' as b where 0=@i;", {i:i}, function (err, results) {
-
-//        console.log(results);
-
-//    });
-//}
-
-
-//db.exec("select '2' as a; select '2' as b;", {}, function (err, results) {
-
-//    console.log(results);
-
-//});
-//db.exec("select '3' as a; select '2' as b;", {}, function (err, results) {
-
-//    console.log(results);
-
-//});
-
-//console.log(mssql.ISOLATION_LEVEL.READ_UNCOMMITTED);
-// console.log(mssql.ISOLATION_LEVEL.READ_COMMITTED);
-
-//db.exec("select top 1 * from [Order];", {}, function (err, results, affected) {
-
-//    console.log('select---------'+results);
-
-//});
-//db.exec("update [Order] set [ContactName]='122' where Id=8;update [Order] set [ContactName]='123' where Id=8 or id=9", {}, function (err, results, affected) {
-
-//    console.log('update---------'+results);
-//    console.log(affected);
-
-//});
-//db.exec("update [Order] set [ContactName]='122' where Id=8;update [Order] set [ContactName]='123' where Id=8 or id=9", {}, function (err, results, affected) {
-
-//    console.log('update---------' + results);
-//    console.log(affected);
-
-//});
-//db.exec("select top 1 * from [Order];", {}, function (err, results, affected) {
-
-//    console.log('select---------' + results);
-
-//});
-
-//db.query("select top 1 * from [Order];", {}, function (err, results, affected) {
-
-//    console.log(results);
-//    console.log(affected);
-
-//});
-//db.exec("select '1' as a; select '2' as b;", {}, function (err, results) {
-
-//    console.log(results);
-
-//});
-//db.exec("select '1' as a; select '2' as b;", {}, function (err, results) {
-
-//    console.log(results);
-
-//});
-//db.exec("select '1' as a; select '2' as b;", {}, function (err, results) {
-
-//    console.log(results);
-
-//});
-//db.exec("select '1' as a; select '2' as b;", {}, function (err, results) {
-
-//    console.log(results);
-
-//});
-
-//db.exec("insert into [test](Name) values('aaa')", {}, function (err, results) {
-
-//   console.log(results);
-
-//});
-
-//db.exec("insert into Test(Name) values('aa');declare @OrderId int=@@IDENTITY  insert into Test2(Id) values(@OrderId);insert into Test2(Id) values(@OrderId);select @@IDENTITY id;", {}, function (err, results) {
-//    console.log(results);
-//});
-
-//db.proc('exec [sp_GetSequenceNo] @SequenceType,1,1,9999,@SequenceNo output', { SequenceType: 1 }, { SequenceNo: 0 }, function (err, results, outputParams) {
-
-//    console.log(outputParams.SequenceNo);
-
-//});
 module.exports = db;

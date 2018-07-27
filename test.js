@@ -83,37 +83,39 @@ dalHelper.setConfig({
 //     console.log(affected);
 // });
 
-// dalHelper.dmls([
+dalHelper.dmls([
 
-//     {
-//         DMLType: dalHelper.DMLType.INSERT,
-//         data: { Name: "1111111111111111111111111" },
-//         table: 'Test',
-//         identity: true
-//     }, {
-//         DMLType: dalHelper.DMLType.INSERT,
-//         data: { Name: '@Test_Id' },
-//         table: 'Test',
-//         //identity: true
-//     }, {
-//         DMLType: dalHelper.DMLType.UPDATE,
-//         data: { '@Name': '@Test_Id' },
-//         table: 'Test',
-//         whereAnd: [
-//                 ['Name', '@Test_Id', '>']
-//             ]
-//             //  identity: true
-//     },
-//     // {
-//     //    DMLType: dalHelper.DMLType.DELETE,
-//     //    table: 'Test',
-//     //    whereAnd: { Id: 30 },
-//     //  //  affected: 1
-//     //}
-// ]).exec(function(err, results, affected) {
-//     console.log(results);
-//     console.log(affected);
-// });
+    {
+        DMLType: dalHelper.DMLType.INSERT,
+        data: { Name: "11111111" },
+        table: 'Test',
+        identity: true
+    }, {
+        DMLType: dalHelper.DMLType.INSERT,
+        data: { Name: '@Test_Id' },
+        table: 'Test',
+        affected: 2
+            //identity: true
+    }
+    // , {
+    //     DMLType: dalHelper.DMLType.UPDATE,
+    //     data: { '@Name': '@Test_Id' },
+    //     table: 'Test',
+    //     whereAnd: [
+    //             ['@Name', '@Test_Id', '>']
+    //         ]
+    //         //  identity: true
+    // },
+    // {
+    //    DMLType: dalHelper.DMLType.DELETE,
+    //    table: 'Test',
+    //    whereAnd: { Id: 30 },
+    //  //  affected: 1
+    //}
+]).exec(function(err, results, affected) {
+    console.log(results);
+    console.log(affected);
+});
 
 //测试update------------------------------------------------------------------------------------------------------
 //var option = {
@@ -142,14 +144,17 @@ dalHelper.setConfig({
 // });
 
 
-var option = {
-    table: 'UserAccount',
-    whereAnd: [
-        ['Id', 100, '<'],
-        // ['Name', []]
-    ]
-}
+// var option = {
+//     table: 'UserAccount',
+//     whereAnd: [
+//         ['Id', 100, '<'],
+//         ['Name', []]
+//     ],
+//     affected: 10000
+// }
 
-dalHelper.select(option).exec(function(err, results) {
-    console.log(JSON.stringify(results))
-})
+// dalHelper.select(option).exec(function(err, results, affected) {
+//     // console.log(err)
+//     console.log(affected)
+//     console.log(JSON.stringify(results))
+// })
