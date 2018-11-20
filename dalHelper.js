@@ -359,7 +359,7 @@ function dmls(options) {
                 {
                     let wheres = getWheres(option.whereAnd, option.whereOr, param, index);
 
-                    sql += ' if exists(select 1 from [' + option.table + '] with(nolock)';
+                    sql += ' if exists(select 1 from [' + option.table + '] ';
 
                     if (wheres.length > 0) {
                         sql += ' where ' + wheres.join(' and ');

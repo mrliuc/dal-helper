@@ -218,7 +218,7 @@ var transactionEnd = function(args, callback) {
 
 var asyncCallback = function(err, args) {
     if (err || args.err) {
-        console.error(args.err);
+        console.error(err || args.err);
         console.error(args.sql);
         console.error(args.inputParams);
     }
