@@ -176,7 +176,8 @@ class MSSQLHelper {
                 return Promise.resolve(results)
             })
             .catch(e => {
-                console.error(e, 'mssql-helper exec')
+                console.error(e, 'mssql-helper exec');
+                ps && ps.unprepare(err => err || transaction && transaction.rollback(err => console.error(err)));
                 throw e;
             });
     }
