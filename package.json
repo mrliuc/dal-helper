@@ -1,10 +1,10 @@
 {
     "name": "dal-helper",
-    "version": "1.0.9",
+    "version": "1.1.0",
     "description": "数据访问层",
     "main": "dalHelper.js",
     "scripts": {
-        "test": "node test.js"
+        "test": "node ./test/test.js"
     },
     "repository": {
         "type": "git",
@@ -25,6 +25,6 @@
     "dependencies": {
         "async": "^2.6.0",
         "moment": "^2.22.1",
-        "mssql": "^3.3.0"
+        "mssql": "^5.0.5"
     }
 }

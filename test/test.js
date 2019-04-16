@@ -1,4 +1,4 @@
-﻿var dalHelper = require('./dalHelper.js');
+﻿var dalHelper = require('../dalHelper.js');
 
 dalHelper.setConfig({
     user: 'sa',
@@ -24,12 +24,12 @@ dalHelper.setConfig({
 
 // return;
 //测试select------------------------------------------------------------------------------------------------------
-// var option = {
-//     columns: ['Account', 'Mobile'],
-//     table: 'UserAccount',
-//     whereAnd: { Id: [1, 2] },
-//     whereOr: {}
-// };
+var option = {
+    columns: ['Account', 'Mobile'],
+    table: 'UserAccount',
+    whereAnd: { Id: [1, 2] },
+    whereOr: {}
+};
 
 //var option = {
 //    columns: ['Id', 'OrderStatus'],
@@ -53,22 +53,26 @@ dalHelper.setConfig({
 //     console.log(JSON.stringify(results))
 // });
 
-// dalHelper.dmls([{
-//     DMLType: dalHelper.DMLType.SELECT,
-//     columns: ['Account', 'Mobile'],
-//     table: 'UserAccount',
-//     whereAnd: { Id: [1, 2] },
-// }, {
-//     DMLType: dalHelper.DMLType.SELECT,
-//     columns: ['Account', 'Mobile'],
-//     table: 'UserAccount',
-//     whereAnd: { Id: [1, 2] },
-// }]).exec(function(err, results) {
-//     console.log(results);
-//     // console.log(results.recordsets[0][0]);
+var a = async() => {
+    var b = await dalHelper.dmls([{
+        DMLType: dalHelper.DMLType.SELECT,
+        columns: ['Account', 'Mobile'],
+        table: 'UserAccount',
+        whereAnd: { Id: [1, 2] },
+    }, {
+        DMLType: dalHelper.DMLType.SELECT,
+        columns: ['Account', 'Mobile'],
+        table: 'UserAccount',
+        whereAnd: { Id: [1, 2] },
+    }]).exec(function(err, results) {
+        // console.log(results);
+        // // console.log(results.recordsets[0][0]);
 
-//     console.log(JSON.stringify(results))
-// });
+        // console.log(JSON.stringify(results))
+    })
+    console.log(b, 2)
+};
+console.log(a(), 1)
 
 //测试insert------------------------------------------------------------------------------------------------------
 
@@ -83,39 +87,39 @@ dalHelper.setConfig({
 //     console.log(affected);
 // });
 
-dalHelper.dmls([
+// dalHelper.dmls([
 
-    {
-        DMLType: dalHelper.DMLType.INSERT,
-        data: { Name: "11111111" },
-        table: 'Test',
-        identity: true
-    }, {
-        DMLType: dalHelper.DMLType.INSERT,
-        data: { Name: '@Test_Id' },
-        table: 'Test',
-        affected: 2
-            //identity: true
-    }
-    // , {
-    //     DMLType: dalHelper.DMLType.UPDATE,
-    //     data: { '@Name': '@Test_Id' },
-    //     table: 'Test',
-    //     whereAnd: [
-    //             ['@Name', '@Test_Id', '>']
-    //         ]
-    //         //  identity: true
-    // },
-    // {
-    //    DMLType: dalHelper.DMLType.DELETE,
-    //    table: 'Test',
-    //    whereAnd: { Id: 30 },
-    //  //  affected: 1
-    //}
-]).exec(function(err, results, affected) {
-    console.log(results);
-    console.log(affected);
-});
+//     {
+//         DMLType: dalHelper.DMLType.INSERT,
+//         data: { Name: "11111111" },
+//         table: 'Test',
+//         identity: true
+//     }, {
+//         DMLType: dalHelper.DMLType.INSERT,
+//         data: { Name: '@Test_Id' },
+//         table: 'Test',
+//         affected: 2
+//             //identity: true
+//     }
+// , {
+//     DMLType: dalHelper.DMLType.UPDATE,
+//     data: { '@Name': '@Test_Id' },
+//     table: 'Test',
+//     whereAnd: [
+//             ['@Name', '@Test_Id', '>']
+//         ]
+//         //  identity: true
+// },
+// {
+//    DMLType: dalHelper.DMLType.DELETE,
+//    table: 'Test',
+//    whereAnd: { Id: 30 },
+//  //  affected: 1
+//}
+// ]).exec(function(err, results, affected) {
+//     console.log(results);
+//     console.log(affected);
+// });
 
 //测试update------------------------------------------------------------------------------------------------------
 //var option = {
