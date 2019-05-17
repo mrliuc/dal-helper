@@ -56,7 +56,7 @@ var option = {
 var a = async() => {
     var b = await dalHelper.dmls([{
         DMLType: dalHelper.DMLType.SELECT,
-        columns: ['Account', 'Mobile'],
+        columns: ['Account', 'Mobile1'],
         table: 'UserAccount',
         whereAnd: { Id: [1, 2] },
     }, {
