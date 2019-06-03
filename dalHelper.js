@@ -52,28 +52,37 @@ class DALHelper {
             if (whereAnd instanceof Array) {
                 whereAnd.forEach(function(item, i) {
                     var op = item.length > 2 ? item[2] : '=';
-                    var name = item[0];
+                    var key = item[0];
                     var val = item[1];
 
-                    var pKey = 'wa_' + name + index + i + '_End';
+                    var table = '',
+                        columnName = key;
+
+                    var dot = key.indexOf('.');
+                    if (dot > 0) {
+                        table = key.substr(0, dot + 1);
+                        columnName = key.substr(dot + 1, key.length - dot);
+                    }
+
+                    var pKey = 'wa_' + columnName + index + i + '_End';
 
                     if (val instanceof Array) {
                         if (val.length === 1) {
-                            whereAnds.push(' [' + name + '] ' + op + ' @' + pKey);
+                            whereAnds.push(' ' + table + '[' + columnName + '] ' + op + ' @' + pKey);
                             param[pKey] = val[0];
                         } else {
-                            whereAnds.push(' [' + name + '] in (@' + pKey + ') ');
+                            whereAnds.push(' ' + table + '[' + columnName + '] in (@' + pKey + ') ');
                             param[pKey] = val;
                         }
                     } else {
 
-                        if (name.indexOf('@') === 0) {
-                            whereAnds.push(' [' + name.replace(/@/g, '') + '] ' + op + ' ' + val);
+                        if (columnName.indexOf('@') === 0) {
+                            whereAnds.push(' ' + table + '[' + columnName.replace(/@/g, '') + '] ' + op + ' ' + val);
                         } else {
                             if (val === null) {
-                                whereAnds.push(' [' + name + '] ' + op + ' null ');
+                                whereAnds.push(' ' + table + '[' + columnName + '] ' + op + ' null ');
                             } else {
-                                whereAnds.push(' [' + name + '] ' + op + ' @' + pKey + ' ');
+                                whereAnds.push(' ' + table + '[' + columnName + '] ' + op + ' @' + pKey + ' ');
                                 param[pKey] = val;
                             }
                         }
@@ -82,22 +91,31 @@ class DALHelper {
                 });
             } else {
                 Object.keys(whereAnd).forEach(function(key, i) {
-                    var pKey = 'wa_' + key + index + i + '_End';
+
+                    var table = '',
+                        columnName = key;
+                    var dot = key.indexOf('.');
+                    if (dot > 0) {
+                        table = key.substr(0, dot + 1);
+                        columnName = key.substr(dot + 1, key.length - dot);
+                    }
+
+                    var pKey = 'wa_' + columnName + index + i + '_End';
 
                     if (whereAnd[key] instanceof Array) {
                         if (whereAnd[key].length === 1) {
-                            whereAnds.push(' [' + key + ']=@' + pKey);
+                            whereAnds.push(' ' + table + '[' + columnName + ']=@' + pKey);
                             param[pKey] = whereAnd[key][0];
                         } else {
-                            whereAnds.push(' [' + key + '] in (@' + pKey + ') ');
+                            whereAnds.push(' ' + table + '[' + columnName + '] in (@' + pKey + ') ');
                             param[pKey] = whereAnd[key];
                         }
                     } else {
 
-                        if (key.indexOf('@') === 0) {
-                            whereAnds.push(' [' + key.replace(/@/g, '') + ']=' + whereAnd[key]);
+                        if (columnName.indexOf('@') === 0) {
+                            whereAnds.push(' ' + table + '[' + columnName.replace(/@/g, '') + ']=' + whereAnd[key]);
                         } else {
-                            whereAnds.push(' [' + key + ']=@' + pKey + ' ');
+                            whereAnds.push(' ' + table + '[' + columnName + ']=@' + pKey + ' ');
                             param[pKey] = whereAnd[key];
                         }
                     }
@@ -110,25 +128,34 @@ class DALHelper {
             if (whereOr instanceof Array) {
                 whereOr.forEach(function(item, i) {
                     var op = item.length > 2 ? item[2] : '=';
-                    var name = item[0];
+                    var key = item[0];
                     var val = item[1];
 
-                    var pKey = 'wo_' + name + index + i + '_End';
+                    var table = '',
+                        columnName = key;
+
+                    var dot = key.indexOf('.');
+                    if (dot > 0) {
+                        table = key.substr(0, dot + 1);
+                        columnName = key.substr(dot + 1, key.length - dot);
+                    }
+
+                    var pKey = 'wo_' + columnName + index + i + '_End';
 
                     if (val instanceof Array) {
                         if (val.length === 1) {
-                            whereOrs.push(' [' + name + '] ' + op + ' @' + pKey);
+                            whereOrs.push(' ' + table + '[' + columnName + '] ' + op + ' @' + pKey);
                             param[pKey] = val[0];
                         } else {
-                            whereOrs.push(' [' + name + '] in (@' + pKey + ') ');
+                            whereOrs.push(' ' + table + '[' + columnName + '] in (@' + pKey + ') ');
                             param[pKey] = val;
                         }
                     } else {
 
-                        if (name.indexOf('@') === 0) {
-                            whereOrs.push(' [' + name.replace(/@/g, '') + '] ' + op + ' ' + val);
+                        if (columnName.indexOf('@') === 0) {
+                            whereOrs.push(' ' + table + '[' + columnName.replace(/@/g, '') + '] ' + op + ' ' + val);
                         } else {
-                            whereOrs.push(' [' + name + '] ' + op + ' @' + pKey + ' ');
+                            whereOrs.push(' ' + table + '[' + columnName + '] ' + op + ' @' + pKey + ' ');
                             param[pKey] = val;
                         }
                     }
@@ -136,22 +163,29 @@ class DALHelper {
                 });
             } else {
                 Object.keys(whereOr).forEach(function(key, i) {
+                    var table = '',
+                        columnName = key;
 
-                    var pKey = 'wo_' + key + index + i + '_End';
+                    var dot = key.indexOf('.');
+                    if (dot > 0) {
+                        table = key.substr(0, dot + 1);
+                        columnName = key.substr(dot + 1, key.length - dot);
+                    }
+                    var pKey = 'wo_' + columnName + index + i + '_End';
 
                     if (whereOr[key] instanceof Array) {
                         if (whereOr[key].length === 1) {
-                            whereOrs.push(' [' + key + ']=@' + pKey);
+                            whereOrs.push(' ' + table + '[' + columnName + ']=@' + pKey);
                             param[pKey] = whereOr[key][0];
                         } else {
-                            whereOrs.push(' [' + key + '] in (@' + pKey + ')');
+                            whereOrs.push(' ' + table + '[' + columnName + '] in (@' + pKey + ')');
                             param[pKey] = whereOr[key];
                         }
                     } else {
-                        if (key.indexOf('@') === 0) {
-                            whereOrs.push(' [' + key.replace(/@/g, '') + ']=' + whereOr[key]);
+                        if (columnName.indexOf('@') === 0) {
+                            whereOrs.push(' ' + table + '[' + columnName.replace(/@/g, '') + ']=' + whereOr[key]);
                         } else {
-                            whereOrs.push(' [' + key + ']=@' + pKey);
+                            whereOrs.push(' ' + table + '[' + columnName + ']=@' + pKey);
                             param[pKey] = whereOr[key];
                         }
                     }
@@ -319,10 +353,17 @@ class DALHelper {
 
                             sql += columnNames.join(',');
                         } else {
-                            sql += '*';
+                            sql += option.table + '.*';
                         }
 
-                        sql += ' from [' + option.table + '] with(nolock) ';
+                        var from = ' from [' + option.table + '] with(nolock) ';
+
+                        if (option.join) {
+                            from += ' join [' + option.join.table + '] with(nolock) ';
+                            from += ' on ' + option.join.on + ' ';
+                        }
+
+                        sql += from;
 
                         let wheres = this.getWheres(option.whereAnd, option.whereOr, param, index);
 
@@ -345,7 +386,7 @@ class DALHelper {
 
                             sql += ';';
                             sql += ' select count(1) Total';
-                            sql += ' from [' + option.table + '] with(nolock) ';
+                            sql += from;
                             if (wheres.length > 0) {
                                 sql += ' where ' + wheres.join(' and ');
                             }
