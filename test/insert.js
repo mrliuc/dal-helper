@@ -38,7 +38,7 @@ dalHelper.dmls([
         data: { '@Name': '@Test_Id' },
         table: 'Test',
         whereAnd: [
-                ['@Name', '@Test_Id', '>']
+                ['@Id', '@Test_Id', '<']
             ]
             //  identity: true
     },

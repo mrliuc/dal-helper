@@ -44,12 +44,36 @@ var dalHelper2 = require('../dalHelper').setConfig(config);
 // }
 
 
-(async(i) => {
-    var b = await dalHelper.query('select top 1 * from UserAccount', function(err, results) {
-        // console.log(results, 3);
-        // // console.log(results.recordsets[0][0]);
+// (async(i) => {
+//     var b = await dalHelper.query('select top 1 * from UserAccount', function(err, results) {
+//         // console.log(results, 3);
+//         // // console.log(results.recordsets[0][0]);
 
-        // console.log(JSON.stringify(results))
-    })
-    console.log(b, i)
-})(10);
+//         // console.log(JSON.stringify(results))
+//     })
+//     console.log(b, i)
+// })(10);
+
+
+dalHelper.select({
+    table: 'Topic',
+    join: {
+        table: 'TopicInfo',
+        on: 'Topic.TopicNo=TopicInfo.TopicNo'
+    },
+    whereOr: { 'TopicInfo.CusContactPhone': '18812345678' }
+}).exec().then(res => false && console.log(res))
+
+dalHelper.select({
+    table: 'Topic',
+    join: {
+        table: 'TopicInfo',
+        on: 'Topic.TopicNo=TopicInfo.TopicNo'
+    },
+    whereAnd: [
+        ['TopicInfo.CusContactPhone', '18812345678']
+    ],
+    whereOr: [
+        ['TopicInfo.CusContactPhone', '18812345678']
+    ]
+}).exec().then(res => false && console.log(res))
