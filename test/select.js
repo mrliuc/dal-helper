@@ -55,25 +55,42 @@ var dalHelper2 = require('../dalHelper').setConfig(config);
 // })(10);
 
 
-dalHelper.select({
-    table: 'Topic',
-    join: {
-        table: 'TopicInfo',
-        on: 'Topic.TopicNo=TopicInfo.TopicNo'
-    },
-    whereOr: { 'TopicInfo.CusContactPhone': '18812345678' }
-}).exec().then(res => false && console.log(res))
+// dalHelper.select({
+//     table: 'Topic',
+//     join: {
+//         table: 'TopicInfo',
+//         on: 'Topic.TopicNo=TopicInfo.TopicNo'
+//     },
+//     whereOr: { 'TopicInfo.CusContactPhone': '18812345678' }
+// }).exec().then(res => false && console.log(res))
+
+// dalHelper.select({
+//     table: 'Topic',
+//     join: {
+//         table: 'TopicInfo',
+//         on: 'Topic.TopicNo=TopicInfo.TopicNo'
+//     },
+//     whereAnd: [
+//         ['TopicInfo.CusContactPhone', '18812345678']
+//     ],
+//     whereOr: [
+//         ['TopicInfo.CusContactPhone', '18812345678']
+//     ]
+// }).exec().then(res => false && console.log(res))
 
 dalHelper.select({
-    table: 'Topic',
-    join: {
-        table: 'TopicInfo',
-        on: 'Topic.TopicNo=TopicInfo.TopicNo'
-    },
+    table: 'TopicInfo',
+    whereAnd: { 'CusContactPhone': null, CusContactName: '123' },
+    whereOr: { 'CusContactPhone': null, CusContactName: '123' },
+}).exec().then(res => false && console.log(res))
+
+
+dalHelper.select({
+    table: 'TopicInfo',
     whereAnd: [
-        ['TopicInfo.CusContactPhone', '18812345678']
+        ['CusContactPhone', null]
     ],
     whereOr: [
-        ['TopicInfo.CusContactPhone', '18812345678']
+        ['CusContactPhone', null]
     ]
 }).exec().then(res => false && console.log(res))

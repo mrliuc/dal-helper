@@ -80,7 +80,7 @@ class DALHelper {
                             whereAnds.push(' ' + table + '[' + columnName.replace(/@/g, '') + '] ' + op + ' ' + val);
                         } else {
                             if (val === null) {
-                                whereAnds.push(' ' + table + '[' + columnName + '] ' + op + ' null ');
+                                whereAnds.push(' ' + table + '[' + columnName + '] is null ');
                             } else {
                                 whereAnds.push(' ' + table + '[' + columnName + '] ' + op + ' @' + pKey + ' ');
                                 param[pKey] = val;
@@ -115,8 +115,13 @@ class DALHelper {
                         if (columnName.indexOf('@') === 0) {
                             whereAnds.push(' ' + table + '[' + columnName.replace(/@/g, '') + ']=' + whereAnd[key]);
                         } else {
-                            whereAnds.push(' ' + table + '[' + columnName + ']=@' + pKey + ' ');
-                            param[pKey] = whereAnd[key];
+                            if (whereAnd[key] == null) {
+                                whereAnds.push(' ' + table + '[' + columnName + '] is null ');
+                            } else {
+                                whereAnds.push(' ' + table + '[' + columnName + ']=@' + pKey + ' ');
+                                param[pKey] = whereAnd[key];
+                            }
+
                         }
                     }
                 });
@@ -155,8 +160,12 @@ class DALHelper {
                         if (columnName.indexOf('@') === 0) {
                             whereOrs.push(' ' + table + '[' + columnName.replace(/@/g, '') + '] ' + op + ' ' + val);
                         } else {
-                            whereOrs.push(' ' + table + '[' + columnName + '] ' + op + ' @' + pKey + ' ');
-                            param[pKey] = val;
+                            if (val === null) {
+                                whereOrs.push(' ' + table + '[' + columnName + '] is null ');
+                            } else {
+                                whereOrs.push(' ' + table + '[' + columnName + '] ' + op + ' @' + pKey + ' ');
+                                param[pKey] = val;
+                            }
                         }
                     }
 
@@ -185,8 +194,13 @@ class DALHelper {
                         if (columnName.indexOf('@') === 0) {
                             whereOrs.push(' ' + table + '[' + columnName.replace(/@/g, '') + ']=' + whereOr[key]);
                         } else {
-                            whereOrs.push(' ' + table + '[' + columnName + ']=@' + pKey);
-                            param[pKey] = whereOr[key];
+
+                            if (whereOr[key] == null) {
+                                whereOrs.push(' ' + table + '[' + columnName + '] is null ');
+                            } else {
+                                whereOrs.push(' ' + table + '[' + columnName + ']=@' + pKey);
+                                param[pKey] = whereOr[key];
+                            }
                         }
                     }
                 });
