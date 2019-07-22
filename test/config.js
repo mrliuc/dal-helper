@@ -1,6 +1,6 @@
 module.exports = {
-    user: 'sa',
-    password: 'l111111.',
+    user: 'test',
+    password: '123456',
     server: '127.0.0.1',
     database: 'TransportPlatform',
     port: 1433,

@@ -9,9 +9,11 @@ class doAction {
         this.param = param;
     }
 
-    async exec(callback) {
-        // console.log(this.sql);
-        // console.log(this.param);
+    async exec(callback, isDebug) {
+        if (isDebug) {
+            console.log(this.sql);
+            console.log(this.param);
+        }
         return this.mssql.exec(this.sql, this.param, callback);
 
     }
@@ -26,7 +28,6 @@ class DALHelper {
             SELECT: 4,
             UPDATE_INSERT: 5,
             COUNT: 6
-
         }
     }
 
@@ -330,7 +331,7 @@ class DALHelper {
                     {
                         sql += this.getUpdateSql(option, param, index);
 
-                        let wheres = this.getWheres(option.whereAnd, option.whereOr, param, index);
+                        let wheres = this.formatWheres(option, param, index);
 
                         if (wheres.length > 0) {
                             sql += ' where ' + wheres.join(' and ');
@@ -343,7 +344,7 @@ class DALHelper {
                         sql += ' delete ';
                         sql += '[' + option.table + '] ';
 
-                        let wheres = this.getWheres(option.whereAnd, option.whereOr, param, index);
+                        let wheres = this.formatWheres(option, param, index);
 
                         if (wheres.length > 0) {
                             sql += ' where ' + wheres.join(' and ');
@@ -379,7 +380,7 @@ class DALHelper {
 
                         sql += from;
 
-                        let wheres = this.getWheres(option.whereAnd, option.whereOr, param, index);
+                        let wheres = this.formatWheres(option, param, index);
 
                         if (wheres.length > 0) {
                             sql += ' where ' + wheres.join(' and ');
@@ -410,7 +411,7 @@ class DALHelper {
                     break;
                 case this.DMLType.UPDATE_INSERT:
                     {
-                        let wheres = this.getWheres(option.whereAnd, option.whereOr, param, index);
+                        let wheres = this.formatWheres(option, param, index);
 
                         sql += ' if exists(select 1 from [' + option.table + '] ';
 
@@ -441,7 +442,7 @@ class DALHelper {
                     {
                         sql += ' select count(1) Count from [' + option.table + '] with(nolock)';
 
-                        let wheres = this.getWheres(option.whereAnd, option.whereOr, param, index);
+                        let wheres = this.formatWheres(option, param, index);
 
                         if (wheres.length > 0) {
                             sql += ' where ' + wheres.join(' and ');
@@ -461,6 +462,18 @@ class DALHelper {
         //console.log(param);
         return new doAction(this.mssql, sql, param);
     };
+
+    formatWheres(option, param, index) {
+
+        let wheres = this.getWheres(option.whereAnd, option.whereOr, param, index);
+
+        if (option.whereOrs) {
+            option.whereOrs.forEach((whereOr, i) => {
+                wheres = wheres.concat(this.getWheres(null, whereOr, param, index + '_' + i));
+            })
+        }
+        return wheres;
+    }
 
 
     select(option) {

@@ -53,26 +53,26 @@ var option = {
 //     console.log(JSON.stringify(results))
 // });
 
-var a = async() => {
-    var b = await dalHelper.dmls([{
-        DMLType: dalHelper.DMLType.SELECT,
-        columns: ['Account', 'Mobile1'],
-        table: 'UserAccount',
-        whereAnd: { Id: [1, 2] },
-    }, {
-        DMLType: dalHelper.DMLType.SELECT,
-        columns: ['Account', 'Mobile'],
-        table: 'UserAccount',
-        whereAnd: { Id: [1, 2] },
-    }]).exec(function(err, results) {
-        // console.log(results);
-        // // console.log(results.recordsets[0][0]);
+// var a = async() => {
+//     var b = await dalHelper.dmls([{
+//         DMLType: dalHelper.DMLType.SELECT,
+//         columns: ['Account', 'Mobile1'],
+//         table: 'UserAccount',
+//         whereAnd: { Id: [1, 2] },
+//     }, {
+//         DMLType: dalHelper.DMLType.SELECT,
+//         columns: ['Account', 'Mobile'],
+//         table: 'UserAccount',
+//         whereAnd: { Id: [1, 2] },
+//     }]).exec(function(err, results) {
+//         // console.log(results);
+//         // // console.log(results.recordsets[0][0]);
 
-        // console.log(JSON.stringify(results))
-    })
-    console.log(b, 2)
-};
-console.log(a(), 1)
+//         // console.log(JSON.stringify(results))
+//     })
+//     console.log(b, 2)
+// };
+// console.log(a(), 1)
 
 //测试insert------------------------------------------------------------------------------------------------------
 
@@ -162,3 +162,26 @@ console.log(a(), 1)
 //     console.log(affected)
 //     console.log(JSON.stringify(results))
 // })
+
+
+// dalHelper.select({
+//     table: 'UserAccount',
+//     whereOrs: [{ Id: 0, CompanyName: 'x' }],
+//     whereOr: { Mobile: 'bbb', Mobile: 'CCC' },
+//     whereAnd: { Name: 'bbb' },
+// }).exec();
+
+var ids = [];
+for (var i = 0; i < 20000; i++) {
+    ids.push(i)
+}
+// console.log(ids)
+dalHelper.select({
+    table: 'UserAccount',
+    whereOrs: [{
+        Id: ids,
+    }],
+
+}).exec((err, results) => {
+    console.log(results)
+}, true);
