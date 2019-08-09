@@ -1,25 +1,23 @@
 ﻿'use strict';
 
-var MSSQLHelper = require('./db/mssql-helper');
+var MYSQLHelper = require('./db/mysql-helper');
 
 class doAction {
-    constructor(mssql, sql, param) {
-        this.mssql = mssql;
-        this.sql = sql;
-        this.param = param;
+    constructor(mysql, options) {
+        this.mysql = mysql;
+        this.options = options;
     }
 
     async exec(callback, isDebug) {
         if (isDebug) {
-            console.log(this.sql);
-            console.log(this.param);
+            console.log(this.options);
         }
-        return this.mssql.exec(this.sql, this.param, callback);
+        return this.mysql.exec(this.options, callback);
 
     }
 }
 
-class DALHelper {
+class MYSQLDalHelper {
     constructor() {
         this.DMLType = {
             INSERT: 1,
@@ -33,12 +31,12 @@ class DALHelper {
 
     setConfig(config) {
 
-        if (!this.mssql) {
-            this.mssql = new MSSQLHelper(config);
-            Object.assign(this, this.mssql);
+        if (!this.mysql) {
+            this.mysql = new MYSQLHelper(config);
+            Object.assign(this, this.mysql);
         }
-        // this.query = () => this.mssql.query;
-        // this.proc = () => this.mssql.proc;
+        // this.query = () => this.mysql.query;
+        // this.proc = () => this.mysql.proc;
         return this;
     }
 
@@ -69,21 +67,21 @@ class DALHelper {
 
                     if (val instanceof Array) {
                         if (val.length === 1) {
-                            whereAnds.push(' ' + table + '[' + columnName + '] ' + op + ' @' + pKey);
+                            whereAnds.push(' ' + table + columnName + op + ' :' + pKey);
                             param[pKey] = val[0];
                         } else {
-                            whereAnds.push(' ' + table + '[' + columnName + '] in (@' + pKey + ') ');
+                            whereAnds.push(' ' + table + columnName + ' in (:' + pKey + ') ');
                             param[pKey] = val;
                         }
                     } else {
 
                         if (columnName.indexOf('@') === 0) {
-                            whereAnds.push(' ' + table + '[' + columnName.replace(/@/g, '') + '] ' + op + ' ' + val);
+                            whereAnds.push(' ' + table + columnName.replace(/@/g, '') + op + ' ' + val.replace('@', ':'));
                         } else {
                             if (val === null) {
-                                whereAnds.push(' ' + table + '[' + columnName + '] is null ');
+                                whereAnds.push(' ' + table + columnName + ' is null ');
                             } else {
-                                whereAnds.push(' ' + table + '[' + columnName + '] ' + op + ' @' + pKey + ' ');
+                                whereAnds.push(' ' + table + columnName + op + ' :' + pKey + ' ');
                                 param[pKey] = val;
                             }
                         }
@@ -105,21 +103,21 @@ class DALHelper {
 
                     if (whereAnd[key] instanceof Array) {
                         if (whereAnd[key].length === 1) {
-                            whereAnds.push(' ' + table + '[' + columnName + ']=@' + pKey);
+                            whereAnds.push(' ' + table + columnName + '=:' + pKey);
                             param[pKey] = whereAnd[key][0];
                         } else {
-                            whereAnds.push(' ' + table + '[' + columnName + '] in (@' + pKey + ') ');
+                            whereAnds.push(' ' + table + columnName + ' in (:' + pKey + ') ');
                             param[pKey] = whereAnd[key];
                         }
                     } else {
 
                         if (columnName.indexOf('@') === 0) {
-                            whereAnds.push(' ' + table + '[' + columnName.replace(/@/g, '') + ']=' + whereAnd[key]);
+                            whereAnds.push(' ' + table + columnName.replace(/@/g, '') + '=' + whereAnd[key].replace('@', ':'));
                         } else {
                             if (whereAnd[key] == null) {
-                                whereAnds.push(' ' + table + '[' + columnName + '] is null ');
+                                whereAnds.push(' ' + table + columnName + ' is null ');
                             } else {
-                                whereAnds.push(' ' + table + '[' + columnName + ']=@' + pKey + ' ');
+                                whereAnds.push(' ' + table + columnName + '=:' + pKey + ' ');
                                 param[pKey] = whereAnd[key];
                             }
 
@@ -150,21 +148,21 @@ class DALHelper {
 
                     if (val instanceof Array) {
                         if (val.length === 1) {
-                            whereOrs.push(' ' + table + '[' + columnName + '] ' + op + ' @' + pKey);
+                            whereOrs.push(' ' + table + columnName + op + ' :' + pKey);
                             param[pKey] = val[0];
                         } else {
-                            whereOrs.push(' ' + table + '[' + columnName + '] in (@' + pKey + ') ');
+                            whereOrs.push(' ' + table + columnName + ' in (:' + pKey + ') ');
                             param[pKey] = val;
                         }
                     } else {
 
                         if (columnName.indexOf('@') === 0) {
-                            whereOrs.push(' ' + table + '[' + columnName.replace(/@/g, '') + '] ' + op + ' ' + val);
+                            whereOrs.push(' ' + table + columnName.replace(/@/g, '') + op + ' ' + val.replace('@', ':'));
                         } else {
                             if (val === null) {
-                                whereOrs.push(' ' + table + '[' + columnName + '] is null ');
+                                whereOrs.push(' ' + table + columnName + ' is null ');
                             } else {
-                                whereOrs.push(' ' + table + '[' + columnName + '] ' + op + ' @' + pKey + ' ');
+                                whereOrs.push(' ' + table + columnName + op + ' :' + pKey + ' ');
                                 param[pKey] = val;
                             }
                         }
@@ -185,21 +183,21 @@ class DALHelper {
 
                     if (whereOr[key] instanceof Array) {
                         if (whereOr[key].length === 1) {
-                            whereOrs.push(' ' + table + '[' + columnName + ']=@' + pKey);
+                            whereOrs.push(' ' + table + columnName + '=:' + pKey);
                             param[pKey] = whereOr[key][0];
                         } else {
-                            whereOrs.push(' ' + table + '[' + columnName + '] in (@' + pKey + ')');
+                            whereOrs.push(' ' + table + columnName + ' in (:' + pKey + ')');
                             param[pKey] = whereOr[key];
                         }
                     } else {
                         if (columnName.indexOf('@') === 0) {
-                            whereOrs.push(' ' + table + '[' + columnName.replace(/@/g, '') + ']=' + whereOr[key]);
+                            whereOrs.push(' ' + table + columnName.replace(/@/g, '') + '=' + whereOr[key].replace('@', ':'));
                         } else {
 
                             if (whereOr[key] == null) {
-                                whereOrs.push(' ' + table + '[' + columnName + '] is null ');
+                                whereOrs.push(' ' + table + columnName + ' is null ');
                             } else {
-                                whereOrs.push(' ' + table + '[' + columnName + ']=@' + pKey);
+                                whereOrs.push(' ' + table + columnName + '=:' + pKey);
                                 param[pKey] = whereOr[key];
                             }
                         }
@@ -223,7 +221,7 @@ class DALHelper {
 
     getUpdateSql(option, param, index) {
         var sql = ' update ';
-        sql += '[' + option.table + '] set ';
+        sql += option.table + ' set ';
 
         let columnNames = [];
 
@@ -234,9 +232,9 @@ class DALHelper {
                 var op = item.length > 2 ? item[2] : '=';
 
                 if (key.indexOf('@') === 0) {
-                    columnNames.push(key.replace(/@/g, '') + op + val);
+                    columnNames.push(key.replace(/@/g, '') + op + val.replace('@', ':'));
                 } else {
-                    columnNames.push(key + op + '@' + key + index);
+                    columnNames.push(key + op + ':' + key + index);
                     param[key + index] = val;
                 }
 
@@ -245,9 +243,9 @@ class DALHelper {
             Object.keys(option.data).forEach(function(key) {
 
                 if (key.indexOf('@') === 0) {
-                    columnNames.push(key.replace(/@/g, '') + '=' + option.data[key]);
+                    columnNames.push(key.replace(/@/g, '') + '=' + option.data[key].replace('@', ':'));
                 } else {
-                    columnNames.push(key + '=@' + key + index);
+                    columnNames.push(key + '=:' + key + index);
                     param[key + index] = option.data[key];
                 }
 
@@ -260,7 +258,7 @@ class DALHelper {
 
     getInsertSql(option, param, index) {
         var sql = ' insert ';
-        sql += '[' + option.table + ']';
+        sql += option.table;
 
         let columnNames = [];
         let valueNames = [];
@@ -268,38 +266,29 @@ class DALHelper {
         Object.keys(option.data).forEach(function(key) {
             columnNames.push(key.replace(/@/g, ''));
             if (key.indexOf('@') === 0) {
-                valueNames.push(option.data[key]);
+                valueNames.push(option.data[key].replace('@', ':'));
             } else {
-                valueNames.push('@' + key + index);
+                valueNames.push(':' + key + index);
                 param[key + index] = option.data[key];
             }
         });
 
-        sql += '([' + columnNames.join('],[') + '])';
+        sql += '(' + columnNames.join(',') + ')';
 
         sql += ' values(' + valueNames.join(',') + ');';
-
-        if (option.identity) {
-            if (sql.indexOf(' declare @' + option.table + '_Id') >= 0) {
-                sql += ' set  @' + option.table + '_Id =@@IDENTITY; select @' + option.table + '_Id as Id;';
-            } else {
-                sql += ' declare @' + option.table + '_Id int=@@IDENTITY; select @' + option.table + '_Id as Id;';
-            }
-        }
 
         return sql;
     }
 
     dmls(options) {
-        var sql = '';
-        var param = {};
-
         options.forEach((option, index) => {
+            let sql = '';
+            let param = {};
             switch (option.DMLType) {
                 case this.DMLType.INSERT:
                     {
                         sql += ' insert ';
-                        sql += '[' + option.table + ']';
+                        sql += '' + option.table + '';
 
                         let columnNames = [];
                         let valueNames = [];
@@ -307,24 +296,15 @@ class DALHelper {
                         Object.keys(option.data).forEach(function(key) {
                             columnNames.push(key.replace(/@/g, ''));
                             if (key.indexOf('@') === 0) {
-                                valueNames.push(option.data[key]);
+                                valueNames.push(option.data[key].replace('@', ':'));
                             } else {
-                                valueNames.push('@' + key + index);
+                                valueNames.push(':' + key + index);
                                 param[key + index] = option.data[key];
                             }
                         });
 
-                        sql += '([' + columnNames.join('],[') + '])';
-
+                        sql += '(' + columnNames.join(',') + ')';
                         sql += ' values(' + valueNames.join(',') + ');';
-
-                        if (option.identity) {
-                            if (sql.indexOf(' declare @' + option.table + '_Id') >= 0) {
-                                sql += ' set  @' + option.table + '_Id =@@IDENTITY; select @' + option.table + '_Id as Id;';
-                            } else {
-                                sql += ' declare @' + option.table + '_Id int=@@IDENTITY; select @' + option.table + '_Id as Id;';
-                            }
-                        }
                     }
                     break;
                 case this.DMLType.UPDATE:
@@ -341,8 +321,8 @@ class DALHelper {
                     break;
                 case this.DMLType.DELETE:
                     {
-                        sql += ' delete ';
-                        sql += '[' + option.table + '] ';
+                        sql += ' delete from ';
+                        sql += option.table;
 
                         let wheres = this.formatWheres(option, param, index);
 
@@ -363,7 +343,7 @@ class DALHelper {
                         if (option.columns && option.columns.length > 0) {
                             let columnNames = [];
                             option.columns.forEach(function(column) {
-                                columnNames.push('[' + column + ']');
+                                columnNames.push(column);
                             });
 
                             sql += columnNames.join(',');
@@ -371,10 +351,10 @@ class DALHelper {
                             sql += option.table + '.*';
                         }
 
-                        var from = ' from [' + option.table + '] with(nolock) ';
+                        var from = ' from ' + option.table;
 
                         if (option.join) {
-                            from += ' join [' + option.join.table + '] with(nolock) ';
+                            from += ' join ' + option.join.table;
                             from += ' on ' + option.join.on + ' ';
                         }
 
@@ -387,15 +367,15 @@ class DALHelper {
                         }
 
                         if (option.orderBys && option.orderBys.length > 0) {
-                            sql += ' order by [' + option.orderBys.join('],[') + ']';
+                            sql += ' order by ' + option.orderBys.join(',') + '';
                         }
 
                         if (option.orderByDescs && option.orderByDescs.length > 0) {
-                            sql += ' order by [' + option.orderByDescs.join('],[') + '] desc';
+                            sql += ' order by ' + option.orderByDescs.join(',') + '] desc';
                         }
 
                         if (option.page) {
-                            sql += ' offset @pageStart rows fetch next @pageLength rows only';
+                            sql += ' offset :pageStart rows fetch next :pageLength rows only';
                             param['pageStart'] = option.page.start;
                             param['pageLength'] = option.page.length;
 
@@ -413,7 +393,7 @@ class DALHelper {
                     {
                         let wheres = this.formatWheres(option, param, index);
 
-                        sql += ' if exists(select 1 from [' + option.table + '] ';
+                        sql += ' if exists(select 1 from ' + option.table;
 
                         if (wheres.length > 0) {
                             sql += ' where ' + wheres.join(' and ');
@@ -440,7 +420,7 @@ class DALHelper {
                     break;
                 case this.DMLType.COUNT:
                     {
-                        sql += ' select count(1) Count from [' + option.table + '] with(nolock)';
+                        sql += ' select count(1) Count from ' + option.table;
 
                         let wheres = this.formatWheres(option, param, index);
 
@@ -452,15 +432,13 @@ class DALHelper {
                     }
             }
 
-            if (option.affected !== undefined) {
-                sql += "if (@@ROWCOUNT!=" + option.affected + ") begin declare @errMsg" + index + " nvarchar(100)='table:" + option.table + ",index:" + index + ",affected:'+convert(varchar(10),@@ROWCOUNT)+',affected err';" +
-                    "throw 50001,@errMsg" + index + ",1 end;";
-            }
+            option.sql = sql;
+            option.param = param;
 
         });
         // console.log(sql);
         //console.log(param);
-        return new doAction(this.mssql, sql, param);
+        return new doAction(this.mysql, options);
     };
 
     formatWheres(option, param, index) {
@@ -526,9 +504,9 @@ class DALHelper {
     };
 
     sql(option) {
-        return new doAction(this.mssql, option.sql, option.param);
+        return new doAction(this.mysql, option.sql, option.param);
     };
 
 }
 
-module.exports = new DALHelper();
+module.exports = MYSQLDalHelper;
