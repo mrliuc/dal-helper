@@ -75,11 +75,30 @@ var dalHelper = require('../../index').MYSQL.setConfig(config);
 //         ['TopicInfo.CusContactPhone', '18812345678']
 //     ]
 // }).exec().then(res => false && console.log(res))
+var pageNo = 1,
+    pageSize = 1;
+// dalHelper.select({
+//     table: 'Test',
+//     // whereAnd: { Id: [40, 43, 44] }
+//     whereAnd: { Name: ['43', '55'] },
+//     page: { start: (pageNo - 1) * pageSize, length: pageSize },
+//     orderByDescs: ['Id']
+// }).exec((err, results, affected) => {
+//     console.log(results, affected)
+// }, true)
 
-dalHelper.select({
+dalHelper.dmls([{
+    DMLType: dalHelper.DMLType.SELECT,
     table: 'Test',
     // whereAnd: { Id: [40, 43, 44] }
-    whereAnd: { Name: ['43', '55'] }
-}).exec((err, results, affected) => {
+    whereAnd: { Name: ['43', '55'] },
+    page: { start: (pageNo - 1) * pageSize, length: pageSize },
+    orderByDescs: ['Id']
+}, {
+    DMLType: dalHelper.DMLType.SELECT,
+    table: 'Test',
+    // whereAnd: { Id: [40, 43, 44] }
+    whereAnd: { Name: ['43', '55'] },
+}]).exec((err, results, affected) => {
     console.log(results, affected)
 }, true)

@@ -281,10 +281,74 @@ class MYSQLDalHelper {
     }
 
     dmls(options) {
-        options.forEach((option, index) => {
+
+        for (let index = 0; index < options.length; index++) {
+            let option = options[index];
+            if (!option.DMLType) {
+                continue;
+            }
             let sql = '';
             let param = {};
             switch (option.DMLType) {
+                case this.DMLType.SELECT:
+                    {
+                        sql += ' select ';
+
+                        if (option.top) {
+                            sql += ' top ' + option.top + ' ';
+                        }
+
+                        if (option.columns && option.columns.length > 0) {
+                            let columnNames = [];
+                            option.columns.forEach(function(column) {
+                                columnNames.push(column);
+                            });
+
+                            sql += columnNames.join(',');
+                        } else {
+                            sql += option.table + '.*';
+                        }
+
+                        var from = ' from ' + option.table;
+
+                        if (option.join) {
+                            from += ' join ' + option.join.table;
+                            from += ' on ' + option.join.on + ' ';
+                        }
+
+                        sql += from;
+
+                        let wheres = this.formatWheres(option, param, index);
+
+                        if (wheres.length > 0) {
+                            sql += ' where ' + wheres.join(' and ');
+                        }
+
+                        if (option.orderBys && option.orderBys.length > 0) {
+                            sql += ' order by ' + option.orderBys.join(',') + '';
+                        }
+
+                        if (option.orderByDescs && option.orderByDescs.length > 0) {
+                            sql += ' order by ' + option.orderByDescs.join(',') + ' desc';
+                        }
+
+                        if (option.page) {
+                            sql += ' limit :pageStart,:pageLength';
+                            param['pageStart'] = option.page.start;
+                            param['pageLength'] = option.page.length;
+
+                            sql += ';';
+
+                            let totalSql = ' select count(*) Total';
+                            totalSql += from;
+                            if (wheres.length > 0) {
+                                totalSql += ' where ' + wheres.join(' and ');
+                            }
+                            options.splice(index + 1, 0, { sql: totalSql, param: param });
+                        }
+                        sql += ';';
+                    }
+                    break;
                 case this.DMLType.INSERT:
                     {
                         sql += ' insert ';
@@ -328,63 +392,6 @@ class MYSQLDalHelper {
 
                         if (wheres.length > 0) {
                             sql += ' where ' + wheres.join(' and ');
-                        }
-                        sql += ';';
-                    }
-                    break;
-                case this.DMLType.SELECT:
-                    {
-                        sql += ' select ';
-
-                        if (option.top) {
-                            sql += ' top ' + option.top + ' ';
-                        }
-
-                        if (option.columns && option.columns.length > 0) {
-                            let columnNames = [];
-                            option.columns.forEach(function(column) {
-                                columnNames.push(column);
-                            });
-
-                            sql += columnNames.join(',');
-                        } else {
-                            sql += option.table + '.*';
-                        }
-
-                        var from = ' from ' + option.table;
-
-                        if (option.join) {
-                            from += ' join ' + option.join.table;
-                            from += ' on ' + option.join.on + ' ';
-                        }
-
-                        sql += from;
-
-                        let wheres = this.formatWheres(option, param, index);
-
-                        if (wheres.length > 0) {
-                            sql += ' where ' + wheres.join(' and ');
-                        }
-
-                        if (option.orderBys && option.orderBys.length > 0) {
-                            sql += ' order by ' + option.orderBys.join(',') + '';
-                        }
-
-                        if (option.orderByDescs && option.orderByDescs.length > 0) {
-                            sql += ' order by ' + option.orderByDescs.join(',') + '] desc';
-                        }
-
-                        if (option.page) {
-                            sql += ' offset :pageStart rows fetch next :pageLength rows only';
-                            param['pageStart'] = option.page.start;
-                            param['pageLength'] = option.page.length;
-
-                            sql += ';';
-                            sql += ' select count(1) Total';
-                            sql += from;
-                            if (wheres.length > 0) {
-                                sql += ' where ' + wheres.join(' and ');
-                            }
                         }
                         sql += ';';
                     }
@@ -435,9 +442,14 @@ class MYSQLDalHelper {
             option.sql = sql;
             option.param = param;
 
-        });
+        }
         // console.log(sql);
         //console.log(param);
+        // options.splice(index + 1, 0, { sql: totalSql, param: param });
+
+        // Object.keys(newOptions).forEach(function)
+
+        console.log(options)
         return new doAction(this.mysql, options);
     };
 
