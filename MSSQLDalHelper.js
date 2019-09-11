@@ -296,6 +296,74 @@ class MSSQLDalHelper {
 
         options.forEach((option, index) => {
             switch (option.DMLType) {
+                case this.DMLType.SELECT:
+                    {
+                        sql += ' select ';
+
+                        if (option.top) {
+                            sql += ' top ' + option.top + ' ';
+                        }
+
+                        let columnNames = [];
+
+                        if (option.groupColumns && option.groupColumns.length > 0) {
+                            columnNames = columnNames.concat(option.groupColumns);
+                        }
+
+                        if (option.columns && option.columns.length > 0) {
+                            option.columns.forEach(function(column) {
+                                columnNames.push('[' + column + ']');
+                            });
+                        }
+
+                        if (columnNames.length > 0) {
+                            sql += columnNames.join(',');
+                        } else {
+                            sql += option.table + '.*';
+                        }
+
+                        var from = ' from [' + option.table + '] with(nolock) ';
+
+                        if (option.join) {
+                            from += ' join [' + option.join.table + '] with(nolock) ';
+                            from += ' on ' + option.join.on + ' ';
+                        }
+
+                        sql += from;
+
+                        let wheres = this.formatWheres(option, param, index);
+
+                        if (wheres.length > 0) {
+                            sql += ' where ' + wheres.join(' and ');
+                        }
+
+                        if (option.orderBys && option.orderBys.length > 0) {
+                            sql += ' order by [' + option.orderBys.join('],[') + ']';
+                        }
+
+                        if (option.orderByDescs && option.orderByDescs.length > 0) {
+                            sql += ' order by [' + option.orderByDescs.join('],[') + '] desc';
+                        }
+
+                        if (option.groupBys && option.groupBys.length > 0) {
+                            sql += ' group by [' + option.groupBys.join('],[') + ']';
+                        }
+
+                        if (option.page) {
+                            sql += ' offset @pageStart rows fetch next @pageLength rows only';
+                            param['pageStart'] = option.page.start;
+                            param['pageLength'] = option.page.length;
+
+                            sql += ';';
+                            sql += ' select count(1) Total';
+                            sql += from;
+                            if (wheres.length > 0) {
+                                sql += ' where ' + wheres.join(' and ');
+                            }
+                        }
+                        sql += ';';
+                    }
+                    break;
                 case this.DMLType.INSERT:
                     {
                         sql += ' insert ';
@@ -352,63 +420,7 @@ class MSSQLDalHelper {
                         sql += ';';
                     }
                     break;
-                case this.DMLType.SELECT:
-                    {
-                        sql += ' select ';
 
-                        if (option.top) {
-                            sql += ' top ' + option.top + ' ';
-                        }
-
-                        if (option.columns && option.columns.length > 0) {
-                            let columnNames = [];
-                            option.columns.forEach(function(column) {
-                                columnNames.push('[' + column + ']');
-                            });
-
-                            sql += columnNames.join(',');
-                        } else {
-                            sql += option.table + '.*';
-                        }
-
-                        var from = ' from [' + option.table + '] with(nolock) ';
-
-                        if (option.join) {
-                            from += ' join [' + option.join.table + '] with(nolock) ';
-                            from += ' on ' + option.join.on + ' ';
-                        }
-
-                        sql += from;
-
-                        let wheres = this.formatWheres(option, param, index);
-
-                        if (wheres.length > 0) {
-                            sql += ' where ' + wheres.join(' and ');
-                        }
-
-                        if (option.orderBys && option.orderBys.length > 0) {
-                            sql += ' order by [' + option.orderBys.join('],[') + ']';
-                        }
-
-                        if (option.orderByDescs && option.orderByDescs.length > 0) {
-                            sql += ' order by [' + option.orderByDescs.join('],[') + '] desc';
-                        }
-
-                        if (option.page) {
-                            sql += ' offset @pageStart rows fetch next @pageLength rows only';
-                            param['pageStart'] = option.page.start;
-                            param['pageLength'] = option.page.length;
-
-                            sql += ';';
-                            sql += ' select count(1) Total';
-                            sql += from;
-                            if (wheres.length > 0) {
-                                sql += ' where ' + wheres.join(' and ');
-                            }
-                        }
-                        sql += ';';
-                    }
-                    break;
                 case this.DMLType.UPDATE_INSERT:
                     {
                         let wheres = this.formatWheres(option, param, index);

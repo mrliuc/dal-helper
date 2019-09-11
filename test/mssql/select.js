@@ -1,8 +1,8 @@
-var config = require('./config');
+var config = require('../config');
 
-var dalHelper = require('../dalHelper').setConfig(config);
+var dalHelper = require('../../index').setConfig(config);
 
-var dalHelper2 = require('../dalHelper').setConfig(config);
+// var dalHelper2 = require('../dalHelper').setConfig(config);
 
 // for (var i = 0; i < 100; i++) {
 
@@ -78,19 +78,29 @@ var dalHelper2 = require('../dalHelper').setConfig(config);
 //     ]
 // }).exec().then(res => false && console.log(res))
 
-dalHelper.select({
-    table: 'TopicInfo',
-    whereAnd: { 'CusContactPhone': null, CusContactName: '123' },
-    whereOr: { 'CusContactPhone': null, CusContactName: '123' },
-}).exec().then(res => false && console.log(res))
+// dalHelper.select({
+//     table: 'TopicInfo',
+//     whereAnd: { 'CusContactPhone': null, CusContactName: '123' },
+//     whereOr: { 'CusContactPhone': null, CusContactName: '123' },
+// }).exec().then(res => false && console.log(res))
+
+
+// dalHelper.select({
+//     table: 'TopicInfo',
+//     whereAnd: [
+//         ['CusContactPhone', null]
+//     ],
+//     whereOr: [
+//         ['CusContactPhone', null]
+//     ]
+// }).exec().then(res => false && console.log(res))
 
 
 dalHelper.select({
-    table: 'TopicInfo',
-    whereAnd: [
-        ['CusContactPhone', null]
-    ],
-    whereOr: [
-        ['CusContactPhone', null]
-    ]
-}).exec().then(res => false && console.log(res))
+    table: 'Test',
+    groupColumns: ['count(*) Ctn', 'Name'],
+    whereAnd: { Name: ['43', '55'] },
+    groupBys: ['Name']
+}).exec((err, results) => {
+    console.log(err, results)
+}, true)

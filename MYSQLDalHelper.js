@@ -298,12 +298,18 @@ class MYSQLDalHelper {
                             sql += ' top ' + option.top + ' ';
                         }
 
-                        if (option.columns && option.columns.length > 0) {
-                            let columnNames = [];
-                            option.columns.forEach(function(column) {
-                                columnNames.push(column);
-                            });
 
+                        let columnNames = [];
+
+                        if (option.groupColumns && option.groupColumns.length > 0) {
+                            columnNames = columnNames.concat(option.groupColumns);
+                        }
+
+                        if (option.columns && option.columns.length > 0) {
+                            columnNames = columnNames.concat(option.columns);
+                        }
+
+                        if (columnNames.length > 0) {
                             sql += columnNames.join(',');
                         } else {
                             sql += option.table + '.*';
@@ -331,6 +337,11 @@ class MYSQLDalHelper {
                         if (option.orderByDescs && option.orderByDescs.length > 0) {
                             sql += ' order by ' + option.orderByDescs.join(',') + ' desc';
                         }
+
+                        if (option.groupBys && option.groupBys.length > 0) {
+                            sql += ' group by ' + option.groupBys.join(',') + '';
+                        }
+
 
                         if (option.page) {
                             sql += ' limit :pageStart,:pageLength';

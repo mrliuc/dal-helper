@@ -87,18 +87,28 @@ var pageNo = 1,
 //     console.log(results, affected)
 // }, true)
 
-dalHelper.dmls([{
-    DMLType: dalHelper.DMLType.SELECT,
+// dalHelper.dmls([{
+//     DMLType: dalHelper.DMLType.SELECT,
+//     table: 'Test',
+//     // whereAnd: { Id: [40, 43, 44] }
+//     whereAnd: { Name: ['43', '55'] },
+//     page: { start: (pageNo - 1) * pageSize, length: pageSize },
+//     orderByDescs: ['Id']
+// }, {
+//     DMLType: dalHelper.DMLType.SELECT,
+//     table: 'Test',
+//     // whereAnd: { Id: [40, 43, 44] }
+//     whereAnd: { Name: ['43', '55'] },
+// }]).exec((err, results, affected) => {
+//     console.log(results, affected)
+// }, true)
+
+
+dalHelper.select({
     table: 'Test',
-    // whereAnd: { Id: [40, 43, 44] }
+    groupColumns: ['count(*) Ctn', 'Name'],
+    groupBys: ['Name'],
     whereAnd: { Name: ['43', '55'] },
-    page: { start: (pageNo - 1) * pageSize, length: pageSize },
-    orderByDescs: ['Id']
-}, {
-    DMLType: dalHelper.DMLType.SELECT,
-    table: 'Test',
-    // whereAnd: { Id: [40, 43, 44] }
-    whereAnd: { Name: ['43', '55'] },
-}]).exec((err, results, affected) => {
-    console.log(results, affected)
+}).exec((err, results) => {
+    console.log(err, results)
 }, true)
