@@ -1,187 +1,397 @@
-﻿var dalHelper = require('../dalHelper.js');
+﻿/* eslint-disable no-undef */
+const assert = require('assert');
+const fs = require('fs');
+const config = require('./config');
+let dalHelper = require('../../index.js')(config);
 
-dalHelper.setConfig({
-    user: 'sa',
-    password: 'l111111.',
-    server: '127.0.0.1',
-    database: 'TransportPlatform',
-    port: 1433,
-    options: {
-        useUTC: false,
-        encrypt: true
-    },
-    pool: {
-        min: 0,
-        max: 10,
-        idleTimeoutMillis: 3000
-    }
+describe('mssql obj ddl', () => {
+    before(async () => {
+        const sqls = fs.readFileSync(`${__dirname}/prepare.sql`, 'utf-8');
+        // console.log(sql);
+        for(const sql of sqls.split('###')){
+            if(!sql){
+                continue;
+            }
+            const affected = await dalHelper.sql({sql}).exec(null,false);
+            if (affected === 0) {
+                // console.error(affected, 'init error');
+            }
+        }
+        return Promise.resolve();
+    });
+
+    let currentDateTime = new Date();
+    let data = {
+        ColInt: 1, ColNvarchar: 'aa', ColDateTime: currentDateTime, ColFloat: 1.123456,
+    };
+    it('insert', async () => {
+        const affected = await dalHelper.insert({
+            table: 'TestTable',
+            data,
+        }).exec();
+
+        assert.equal(affected, 1);
+
+        return Promise.resolve();
+    });
+
+    it('select', async () => {
+        const [result] = await dalHelper.select({
+            table: 'TestTable',
+        }).exec();
+        assert.deepEqual({ Id: 1, ...data, ...{ ColDateTime: parseInt(data.ColDateTime.getTime() / 1000) } }, { ...result, ...{ ColDateTime: parseInt(data.ColDateTime.getTime() / 1000) } });
+        return Promise.resolve();
+    });
+
+    it('insert and return indentity', async () => {
+        const [result] = await dalHelper.insert({
+            table: 'TestTable',
+            data,
+            identity: true,
+        }).exec();
+
+        assert.deepEqual({ Id: 2 }, result);
+
+        return Promise.resolve();
+    });
+
+    currentDateTime = new Date();
+    data = {
+        ColInt: 2, ColNvarchar: 'bb', ColDateTime: currentDateTime, ColFloat: 2.789123,
+    };
+
+    it('update', async () => {
+        const affected = await dalHelper.update({
+            table: 'TestTable',
+            data,
+            whereAnd: { Id: 2 },
+        }).exec();
+
+        assert.equal(affected, 1);
+
+        return Promise.resolve();
+    });
+
+    it('select again', async () => {
+        const [result] = await dalHelper.select({
+            table: 'TestTable',
+            whereAnd: { Id: 2 },
+        }).exec();
+        assert.deepEqual({ Id: 2, ...data, ...{ ColDateTime: parseInt(data.ColDateTime.getTime() / 1000) } }, { ...result, ...{ ColDateTime: parseInt(data.ColDateTime.getTime() / 1000) } });
+        return Promise.resolve();
+    });
+
+    it('insert tran', async () => {
+        const [result] = await dalHelper.dmls([{
+            DMLType: dalHelper.DMLType.INSERT,
+            table: 'TestTable',
+            data,
+        }, {
+            DMLType: dalHelper.DMLType.INSERT,
+            table: 'TestTable',
+            data,
+            identity: true,
+        }, {
+            DMLType: dalHelper.DMLType.INSERT,
+            table: 'TestTable',
+            data: { '@ColInt': '@TestTable_Id' },
+        }]).exec();
+
+        assert.deepEqual({ Id: 4 }, result);
+
+        return Promise.resolve();
+    });
+
+    it('select count', async () => {
+        const [result] = await dalHelper.count({
+            table: 'TestTable',
+        }).exec();
+        assert.equal(5, result.Count);
+        return Promise.resolve();
+    });
+
+    it('select tran', async () => {
+        const [result] = await dalHelper.select({
+            table: 'TestTable',
+            whereAnd: { Id: 5 },
+        }).exec();
+        assert.deepEqual(4, result.ColInt);
+        return Promise.resolve();
+    });
+    
+    it('update single', async () => {
+        const affected = await dalHelper.dmls([{
+            DMLType: dalHelper.DMLType.UPDATE,
+            table: 'TestTable',
+            data: { ColInt: 11, ColNvarchar: 'cc' },
+            whereAnd: { Id: 1 },
+        }]).exec(null);
+
+        assert.deepEqual(1, affected);
+
+        return Promise.resolve();
+    });
+
+    it('update batch', async () => {
+
+        const affected = await dalHelper.dmls([{
+            DMLType: dalHelper.DMLType.UPDATE,
+            table: 'TestTable',
+            data: { ColInt: 11, ColNvarchar: 'cc' },
+            whereAnd: { Id: 1 },
+        }, {
+            DMLType: dalHelper.DMLType.UPDATE,
+            table: 'TestTable',
+            data: { ColInt: 12, ColNvarchar: 'dd' },
+            whereAnd: { Id: [2, 3] },
+        }]).exec();
+
+        assert.deepEqual(3, affected);
+
+        return Promise.resolve();
+    });
+
+
+    it('where in', async () => {
+        const ids = [];
+        // eslint-disable-next-line no-plusplus
+        for (let i = 1; i < 10000; i++) {
+            ids.push(i);
+        }
+        const results = await dalHelper.select({
+            table: 'TestTable',
+            whereAnd: { Id: ids },
+        }).exec();
+
+        assert.deepEqual(5, results.length);
+
+        return Promise.resolve();
+    });
+
+    it('proc sp_GetSequenceNo 100',async()=>{
+        for(let i=1;i<3;i++){
+            for(let j=1;j<100;j++){
+                const result = await dalHelper.proc('exec [sp_GetSequenceNo] @SequenceType, 1, 1, 99,@SequenceNo output',{SequenceType:'T1'}, { SequenceNo: 0 });
+                assert.deepEqual(j%100, result.SequenceNo);
+            }
+        }
+
+        return Promise.resolve();
+    }).timeout(100000)
+
+    it('proc sp_GetSequenceNo 10000',async()=>{
+        for(let j=1;j<2;j++){
+            for(let i=1;i<10000;i++){
+                const result = await dalHelper.proc('exec [sp_GetSequenceNo] @SequenceType, 1, 1, 9999,@SequenceNo output',{ SequenceType: 'T2' }, { SequenceNo: 0 });
+                assert.deepEqual(i%10000, result.SequenceNo);
+            }
+        }
+        return Promise.resolve();
+    }).timeout(100000)
 });
 
 
-// dalHelper.exec('select 1', {}, function(err, results) {
-//     console.log(results);
-// })
 
-// return;
-//测试select------------------------------------------------------------------------------------------------------
-var option = {
-    columns: ['Account', 'Mobile'],
-    table: 'UserAccount',
-    whereAnd: { Id: [1, 2] },
-    whereOr: {}
-};
+describe('mssql arr ddl', () => {
+    before(async () => {
+        const sqls = fs.readFileSync(`${__dirname}/prepare.sql`, 'utf-8');
+        // console.log(sql);
+        for(const sql of sqls.split('###')){
+            if(!sql){
+                continue;
+            }
+            const affected = await dalHelper.sql({sql}).exec(null,false);
+            if (affected === 0) {
+                // console.error(affected, 'init error');
+            }
+        }
+        return Promise.resolve();
+    });
 
-//var option = {
-//    columns: ['Id', 'OrderStatus'],
-//    table: 'Order',
-//    whereAnd: { OrderStatus: 6 },
-//    whereOr: { OrderNo: 'GR17060019', MergeOrderNo: 'GR17060019' }
-//};
+    let currentDateTime = new Date();
+    let data = {
+        ColInt: 1, ColNvarchar: 'aa', ColDateTime: currentDateTime, ColFloat: 1.123456,
+    };
+    it('insert', async () => {
+        const affected = await dalHelper.insert({
+            table: 'TestTable',
+            data,
+        }).exec();
+
+        assert.equal(affected, 1);
+
+        return Promise.resolve();
+    });
+
+    it('select', async () => {
+        const [result] = await dalHelper.select({
+            table: 'TestTable',
+        }).exec();
+        assert.deepEqual({ Id: 1, ...data, ...{ ColDateTime: parseInt(data.ColDateTime.getTime() / 1000) } }, { ...result, ...{ ColDateTime: parseInt(data.ColDateTime.getTime() / 1000) } });
+        return Promise.resolve();
+    });
+
+    it('insert and return indentity', async () => {
+        const [result] = await dalHelper.insert({
+            table: 'TestTable',
+            data,
+            identity: true,
+        }).exec();
+
+        assert.deepEqual({ Id: 2 }, result);
+
+        return Promise.resolve();
+    });
+
+    currentDateTime = new Date();
+    data = {
+        ColInt: 2, ColNvarchar: 'bb', ColDateTime: currentDateTime, ColFloat: 2.789123,
+    };
+
+    it('update', async () => {
+        const affected = await dalHelper.update({
+            table: 'TestTable',
+            data,
+            whereAnd: [ ['Id', 2 ]],
+        }).exec();
+
+        assert.equal(affected, 1);
+
+        return Promise.resolve();
+    });
+
+    it('select lt', async () => {
+        const [result] = await dalHelper.select({
+            table: 'TestTable',
+            whereAnd: [[ 'Id', 2,'<' ]],
+        }).exec();
+        assert.deepEqual({ Id: 1, ...data, ...{ ColDateTime: parseInt(data.ColDateTime.getTime() / 1000) } }, { ...result, ...{ ColDateTime: parseInt(data.ColDateTime.getTime() / 1000) } });
+        return Promise.resolve();
+    });
+
+    it('select lt lg', async () => {
+        const [result] = await dalHelper.select({
+            table: 'TestTable',
+            whereAnd: [[ 'Id', 3,'<' ],[ 'Id', 1,'>' ]],
+        }).exec();
+        assert.deepEqual({ Id: 2, ...data, ...{ ColDateTime: parseInt(data.ColDateTime.getTime() / 1000) } }, { ...result, ...{ ColDateTime: parseInt(data.ColDateTime.getTime() / 1000) } });
+        return Promise.resolve();
+    });
+
+    it('select again', async () => {
+        const [result] = await dalHelper.select({
+            table: 'TestTable',
+            whereAnd: [[ 'Id', 2 ]],
+        }).exec();
+        assert.deepEqual({ Id: 2, ...data, ...{ ColDateTime: parseInt(data.ColDateTime.getTime() / 1000) } }, { ...result, ...{ ColDateTime: parseInt(data.ColDateTime.getTime() / 1000) } });
+        return Promise.resolve();
+    });
+
+    it('insert tran', async () => {
+        const [result] = await dalHelper.dmls([{
+            DMLType: dalHelper.DMLType.INSERT,
+            table: 'TestTable',
+            data,
+        }, {
+            DMLType: dalHelper.DMLType.INSERT,
+            table: 'TestTable',
+            data,
+            identity: true,
+        }, {
+            DMLType: dalHelper.DMLType.INSERT,
+            table: 'TestTable',
+            data: { '@ColInt': '@TestTable_Id' },
+        }]).exec();
+
+        assert.deepEqual({ Id: 4 }, result);
+
+        return Promise.resolve();
+    });
+
+    it('select count', async () => {
+        const [result] = await dalHelper.count({
+            table: 'TestTable',
+        }).exec();
+        assert.equal(5, result.Count);
+        return Promise.resolve();
+    });
+
+    it('select tran', async () => {
+        const [result] = await dalHelper.select({
+            table: 'TestTable',
+            whereAnd: [['Id', 5]] ,
+        }).exec();
+        assert.deepEqual(4, result.ColInt);
+        return Promise.resolve();
+    });
+    
+    it('update single', async () => {
+        const affected = await dalHelper.dmls([{
+            DMLType: dalHelper.DMLType.UPDATE,
+            table: 'TestTable',
+            data: { ColInt: 11, ColNvarchar: 'cc' },
+            whereAnd: [['Id',1]]  ,
+        }]).exec(null);
+
+        assert.deepEqual(1, affected);
+
+        return Promise.resolve();
+    });
+
+    it('update batch', async () => {
+
+        const affected = await dalHelper.dmls([{
+            DMLType: dalHelper.DMLType.UPDATE,
+            table: 'TestTable',
+            data: { ColInt: 11, ColNvarchar: 'cc' },
+            whereAnd: [['Id', 1]],
+        }, {
+            DMLType: dalHelper.DMLType.UPDATE,
+            table: 'TestTable',
+            data: { ColInt: 12, ColNvarchar: 'dd' },
+            whereAnd: [['Id', [2, 3]]]  ,
+        }]).exec();
+
+        assert.deepEqual(3, affected);
+
+        return Promise.resolve();
+    });
 
 
-//var option = {
-//    columns: ['Id', 'OrderStatus'],
-//    table: 'Order',
-//  //  whereAnd: { OrderStatus: 6 },
-//    whereAnd: [['OrderNo', 'GR17060019', 'like'],['MergeOrderNo', 'GR17060019'] ]
-//};
+    it('where in', async () => {
+        const ids = [];
+        // eslint-disable-next-line no-plusplus
+        for (let i = 1; i < 10000; i++) {
+            ids.push(i);
+        }
+        const results = await dalHelper.select({
+            table: 'TestTable',
+            whereAnd: [['Id', ids ]],
+        }).exec();
 
-// dalHelper.select(option).exec(function(err, results) {
-//     console.log(results);
-//     // console.log(results.recordsets[0][0]);
+        assert.deepEqual(5, results.length);
 
-//     console.log(JSON.stringify(results))
-// });
+        return Promise.resolve();
+    });
 
-// var a = async() => {
-//     var b = await dalHelper.dmls([{
-//         DMLType: dalHelper.DMLType.SELECT,
-//         columns: ['Account', 'Mobile1'],
-//         table: 'UserAccount',
-//         whereAnd: { Id: [1, 2] },
-//     }, {
-//         DMLType: dalHelper.DMLType.SELECT,
-//         columns: ['Account', 'Mobile'],
-//         table: 'UserAccount',
-//         whereAnd: { Id: [1, 2] },
-//     }]).exec(function(err, results) {
-//         // console.log(results);
-//         // // console.log(results.recordsets[0][0]);
+    it('proc sp_GetSequenceNo 100',async()=>{
+        for(let i=1;i<3;i++){
+            for(let j=1;j<100;j++){
+                const result = await dalHelper.proc('exec [sp_GetSequenceNo] @SequenceType, 1, 1, 99,@SequenceNo output',{SequenceType:'T1'}, { SequenceNo: 0 });
+                assert.deepEqual(j%100, result.SequenceNo);
+            }
+        }
 
-//         // console.log(JSON.stringify(results))
-//     })
-//     console.log(b, 2)
-// };
-// console.log(a(), 1)
+        return Promise.resolve();
+    }).timeout(100000)
 
-//测试insert------------------------------------------------------------------------------------------------------
-
-// var option = {
-//     data: { Name: "wwwwwwwwww" },
-//     table: 'Test',
-//     // identity: true
-// };
-
-// dalHelper.insert(option).exec(function(err, results, affected) {
-//     console.log(results);
-//     console.log(affected);
-// });
-
-// dalHelper.dmls([
-
-//     {
-//         DMLType: dalHelper.DMLType.INSERT,
-//         data: { Name: "11111111" },
-//         table: 'Test',
-//         identity: true
-//     }, {
-//         DMLType: dalHelper.DMLType.INSERT,
-//         data: { Name: '@Test_Id' },
-//         table: 'Test',
-//         affected: 2
-//             //identity: true
-//     }
-// , {
-//     DMLType: dalHelper.DMLType.UPDATE,
-//     data: { '@Name': '@Test_Id' },
-//     table: 'Test',
-//     whereAnd: [
-//             ['@Name', '@Test_Id', '>']
-//         ]
-//         //  identity: true
-// },
-// {
-//    DMLType: dalHelper.DMLType.DELETE,
-//    table: 'Test',
-//    whereAnd: { Id: 30 },
-//  //  affected: 1
-//}
-// ]).exec(function(err, results, affected) {
-//     console.log(results);
-//     console.log(affected);
-// });
-
-//测试update------------------------------------------------------------------------------------------------------
-//var option = {
-//    data: { Name: 'sdaf' },
-//    table: 'Test',
-//    //whereAnd: { Id: 1 },
-//    whereOr: { Id: 2, Name: '1231' }
-//};
-
-//dalHelper.update(option).exec(function (err, results, affected) {
-//    console.log(results);
-//    console.log(affected);
-//});
-
-
-//测试delete------------------------------------------------------------------------------------------------------
-// var option = {
-//     table: 'Test',
-//     //  whereAnd: { Id: 1 },
-//     whereOr: { Id: 2, Name: '1231' }
-// };
-
-// dalHelper.delete(option).exec(function(err, results, affected) {
-//     console.log(results);
-//     console.log(affected);
-// });
-
-
-// var option = {
-//     table: 'UserAccount',
-//     whereAnd: [
-//         ['Id', 100, '<'],
-//         ['Name', []]
-//     ],
-//     affected: 10000
-// }
-
-// dalHelper.select(option).exec(function(err, results, affected) {
-//     // console.log(err)
-//     console.log(affected)
-//     console.log(JSON.stringify(results))
-// })
-
-
-// dalHelper.select({
-//     table: 'UserAccount',
-//     whereOrs: [{ Id: 0, CompanyName: 'x' }],
-//     whereOr: { Mobile: 'bbb', Mobile: 'CCC' },
-//     whereAnd: { Name: 'bbb' },
-// }).exec();
-
-var ids = [];
-for (var i = 0; i < 20000; i++) {
-    ids.push(i)
-}
-// console.log(ids)
-dalHelper.select({
-    table: 'UserAccount',
-    whereOrs: [{
-        Id: ids,
-    }],
-
-}).exec((err, results) => {
-    console.log(results)
-}, true);
+    it('proc sp_GetSequenceNo 10000',async()=>{
+        for(let j=1;j<2;j++){
+            for(let i=1;i<10000;i++){
+                const result = await dalHelper.proc('exec [sp_GetSequenceNo] @SequenceType, 1, 1, 9999,@SequenceNo output',{ SequenceType: 'T2' }, { SequenceNo: 0 });
+                assert.deepEqual(i%10000, result.SequenceNo);
+            }
+        }
+        return Promise.resolve();
+    }).timeout(100000)
+});

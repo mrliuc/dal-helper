@@ -1,8 +1,9 @@
-var MSSQLDalHelper = require('./MSSQLDalHelper');
-var MYSQLDalHelper = require('./MYSQLDalHelper');
+const MSSQLDalHelper = require('./lib/mssql/DalHelper');
+const MYSQLDalHelper = require('./lib/mysql/DalHelper');
 
-var dal = new MSSQLDalHelper();
-
-dal.MYSQL = new MYSQLDalHelper();
-
-module.exports = dal;
+module.exports = (config)=>{
+    if(config&&config.drive==='mysql'){
+        return new MYSQLDalHelper().setConfig(config);
+    }
+    return new MSSQLDalHelper().setConfig(config);
+};
