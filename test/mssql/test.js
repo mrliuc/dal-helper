@@ -81,6 +81,8 @@ describe('mssql obj ddl', () => {
         return Promise.resolve();
     });
 
+    
+
     it('insert tran', async () => {
         const [result] = await dalHelper.dmls([{
             DMLType: dalHelper.DMLType.INSERT,
@@ -152,21 +154,55 @@ describe('mssql obj ddl', () => {
     });
 
 
-    it('where in', async () => {
+    it('where in varchar', async () => {
+        const results = await dalHelper.select({
+            table: 'TestTable',
+            whereAnd: { ColNvarchar: ['dd','bb'], },
+        }).exec();
+
+        assert.deepEqual(3, results.length);
+
+        return Promise.resolve();
+    });
+
+    it('where in int', async () => {
         const ids = [];
-        // eslint-disable-next-line no-plusplus
         for (let i = 1; i < 10000; i++) {
             ids.push(i);
         }
         const results = await dalHelper.select({
             table: 'TestTable',
-            whereAnd: { Id: ids },
+            whereAnd: { Id: ids, },
         }).exec();
 
         assert.deepEqual(5, results.length);
 
         return Promise.resolve();
     });
+
+
+    it('count',async()=>{
+        const [result] = await dalHelper.count({
+            table: 'TestTable',
+            whereAnd: { Id: [1,2] },
+        }).exec();
+
+        assert.equal(2, result.Count);
+
+        return Promise.resolve();
+    })
+
+    it('delete',async()=>{
+        const affected = await dalHelper.delete({
+            table: 'TestTable',
+            whereAnd: { Id: 1 },
+        }).exec();
+
+        assert.equal(1, affected);
+
+        return Promise.resolve();
+    })
+
 
     it('proc sp_GetSequenceNo 100',async()=>{
         for(let i=1;i<3;i++){
@@ -357,8 +393,18 @@ describe('mssql arr ddl', () => {
         return Promise.resolve();
     });
 
+    it('where in varchar', async () => {
+        const results = await dalHelper.select({
+            table: 'TestTable',
+            whereAnd: [ ['ColNvarchar', ['dd','bb']] ],
+        }).exec();
 
-    it('where in', async () => {
+        assert.deepEqual(3, results.length);
+
+        return Promise.resolve();
+    });
+
+    it('where in int', async () => {
         const ids = [];
         // eslint-disable-next-line no-plusplus
         for (let i = 1; i < 10000; i++) {
@@ -373,6 +419,28 @@ describe('mssql arr ddl', () => {
 
         return Promise.resolve();
     });
+
+    it('count',async()=>{
+        const [result] = await dalHelper.count({
+            table: 'TestTable',
+            whereAnd: [[ 'Id', [1,2] ]],
+        }).exec();
+
+        assert.equal(2, result.Count);
+
+        return Promise.resolve();
+    })
+
+    it('delete',async()=>{
+        const affected = await dalHelper.delete({
+            table: 'TestTable',
+            whereAnd:[['Id', 1 ]],
+        }).exec();
+
+        assert.equal(1, affected);
+
+        return Promise.resolve();
+    })
 
     it('proc sp_GetSequenceNo 100',async()=>{
         for(let i=1;i<3;i++){

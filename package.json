@@ -6,7 +6,7 @@
   "scripts": {
     "test-mssql": "./node_modules/.bin/mocha ./test/mssql/test",
     "test-mysql": "./node_modules/.bin/mocha ./test/mysql/test",
-    "test":"npm run test-mssql & npm run test-mysql"
+    "test": "./node_modules/.bin/mocha ./test/mssql/test ./test/mysql/test"
   },
   "repository": {
     "type": "git",
