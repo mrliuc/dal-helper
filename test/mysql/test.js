@@ -2,22 +2,22 @@
 const assert = require('assert');
 const fs = require('fs');
 const config = require('./config');
-let dalHelper = require('../../index.js')(config);
+const dalHelper = require('../../index.js')(config);
 
-describe('mssql obj ddl', () => {
+describe('mysql obj ddl', () => {
     before(async () => {
         const sqls = fs.readFileSync(`${__dirname}/prepare.sql`, 'utf-8');
         // console.log(sqls.split(';').filter(sql=>sql).map(sql=>({sql})));
-        for(const sql of sqls.split('###')){
-            if(!sql){
+        for (const sql of sqls.split('###')) {
+            if (!sql) {
                 continue;
             }
-            const affected = await dalHelper.sql({sql}).exec(null,false);
+            const affected = await dalHelper.sql({ sql }).exec(null, false);
             if (affected === 0) {
                 // console.error(affected, 'init error');
             }
         }
-       
+
         return Promise.resolve();
     });
 
@@ -154,7 +154,7 @@ describe('mssql obj ddl', () => {
     it('where in varchar', async () => {
         const results = await dalHelper.select({
             table: 'TestTable',
-            whereAnd: { ColNvarchar: ['dd','bb'], },
+            whereAnd: { ColNvarchar: ['dd', 'bb'] },
         }).exec();
 
         assert.deepEqual(3, results.length);
@@ -177,18 +177,18 @@ describe('mssql obj ddl', () => {
         return Promise.resolve();
     });
 
-    it('count',async()=>{
+    it('count', async () => {
         const [result] = await dalHelper.count({
             table: 'TestTable',
-            whereAnd: { Id: [1,2] },
+            whereAnd: { Id: [1, 2] },
         }).exec();
 
         assert.equal(2, result.Count);
 
         return Promise.resolve();
-    })
+    });
 
-    it('delete',async()=>{
+    it('delete', async () => {
         const affected = await dalHelper.delete({
             table: 'TestTable',
             whereAnd: { Id: 1 },
@@ -197,43 +197,41 @@ describe('mssql obj ddl', () => {
         assert.equal(1, affected);
 
         return Promise.resolve();
-    })
+    });
 
 
-    it('proc sp_GetSequenceNo 100',async()=>{
-        for(let i=1;i<3;i++){
-            for(let j=1;j<100;j++){
-                const result = await dalHelper.proc('call sp_GetSequenceNo(:SeqType, 1, 1, 99,@SeqNo);',{SeqType:'T1'});
-                assert.deepEqual(j%100, result.SeqNo);
+    it('proc sp_GetSequenceNo 100', async () => {
+        for (let i = 1; i < 3; i++) {
+            for (let j = 1; j < 100; j++) {
+                const result = await dalHelper.proc('call sp_GetSequenceNo(:SeqType, 1, 1, 99,@SeqNo);', { SeqType: 'T1' });
+                assert.deepEqual(j % 100, result.SeqNo);
             }
         }
 
         return Promise.resolve();
-    }).timeout(100000)
+    }).timeout(100000);
 
-    it('proc sp_GetSequenceNo 10000',async()=>{
-        for(let j=1;j<2;j++){
-            for(let i=1;i<10000;i++){
-                const result = await dalHelper.proc('call sp_GetSequenceNo(:SeqType, 1, 1, 9999,@SeqNo);',{SeqType:'T2'});
-                assert.deepEqual(i%10000, result.SeqNo);
+    it('proc sp_GetSequenceNo 10000', async () => {
+        for (let j = 1; j < 2; j++) {
+            for (let i = 1; i < 10000; i++) {
+                const result = await dalHelper.proc('call sp_GetSequenceNo(:SeqType, 1, 1, 9999,@SeqNo);', { SeqType: 'T2' });
+                assert.deepEqual(i % 10000, result.SeqNo);
             }
         }
         return Promise.resolve();
-    }).timeout(100000)
+    }).timeout(100000);
 });
 
 
-
-
-describe('mssql arr ddl', () => {
+describe('mysql arr ddl', () => {
     before(async () => {
         const sqls = fs.readFileSync(`${__dirname}/prepare.sql`, 'utf-8');
         // console.log(sql);
-        for(const sql of sqls.split('###')){
-            if(!sql){
+        for (const sql of sqls.split('###')) {
+            if (!sql) {
                 continue;
             }
-            const affected = await dalHelper.sql({sql}).exec(null,false);
+            const affected = await dalHelper.sql({ sql }).exec(null, false);
             if (affected === 0) {
                 // console.error(affected, 'init error');
             }
@@ -285,7 +283,7 @@ describe('mssql arr ddl', () => {
         const affected = await dalHelper.update({
             table: 'TestTable',
             data,
-            whereAnd: [ ['Id', 2 ]],
+            whereAnd: [['Id', 2]],
         }).exec();
 
         assert.equal(affected, 1);
@@ -296,7 +294,7 @@ describe('mssql arr ddl', () => {
     it('select lt', async () => {
         const [result] = await dalHelper.select({
             table: 'TestTable',
-            whereAnd: [[ 'Id', 2,'<' ]],
+            whereAnd: [['Id', 2, '<']],
         }).exec();
         assert.deepEqual({ Id: 1, ...data, ...{ ColDateTime: parseInt(data.ColDateTime.getTime() / 1000) } }, { ...result, ...{ ColDateTime: parseInt(data.ColDateTime.getTime() / 1000) } });
         return Promise.resolve();
@@ -305,7 +303,7 @@ describe('mssql arr ddl', () => {
     it('select lt lg', async () => {
         const [result] = await dalHelper.select({
             table: 'TestTable',
-            whereAnd: [[ 'Id', 3,'<' ],[ 'Id', 1,'>' ]],
+            whereAnd: [['Id', 3, '<'], ['Id', 1, '>']],
         }).exec();
         assert.deepEqual({ Id: 2, ...data, ...{ ColDateTime: parseInt(data.ColDateTime.getTime() / 1000) } }, { ...result, ...{ ColDateTime: parseInt(data.ColDateTime.getTime() / 1000) } });
         return Promise.resolve();
@@ -314,7 +312,7 @@ describe('mssql arr ddl', () => {
     it('select again', async () => {
         const [result] = await dalHelper.select({
             table: 'TestTable',
-            whereAnd: [[ 'Id', 2 ]],
+            whereAnd: [['Id', 2]],
         }).exec();
         assert.deepEqual({ Id: 2, ...data, ...{ ColDateTime: parseInt(data.ColDateTime.getTime() / 1000) } }, { ...result, ...{ ColDateTime: parseInt(data.ColDateTime.getTime() / 1000) } });
         return Promise.resolve();
@@ -352,18 +350,18 @@ describe('mssql arr ddl', () => {
     it('select tran', async () => {
         const [result] = await dalHelper.select({
             table: 'TestTable',
-            whereAnd: [['Id', 5]] ,
+            whereAnd: [['Id', 5]],
         }).exec();
         assert.deepEqual(4, result.ColInt);
         return Promise.resolve();
     });
-    
+
     it('update single', async () => {
         const affected = await dalHelper.dmls([{
             DMLType: dalHelper.DMLType.UPDATE,
             table: 'TestTable',
             data: { ColInt: 11, ColNvarchar: 'cc' },
-            whereAnd: [['Id',1]]  ,
+            whereAnd: [['Id', 1]],
         }]).exec(null);
 
         assert.deepEqual(1, affected);
@@ -372,7 +370,6 @@ describe('mssql arr ddl', () => {
     });
 
     it('update batch', async () => {
-
         const affected = await dalHelper.dmls([{
             DMLType: dalHelper.DMLType.UPDATE,
             table: 'TestTable',
@@ -382,7 +379,7 @@ describe('mssql arr ddl', () => {
             DMLType: dalHelper.DMLType.UPDATE,
             table: 'TestTable',
             data: { ColInt: 12, ColNvarchar: 'dd' },
-            whereAnd: [['Id', [2, 3]]]  ,
+            whereAnd: [['Id', [2, 3]]],
         }]).exec();
 
         assert.deepEqual(3, affected);
@@ -393,7 +390,7 @@ describe('mssql arr ddl', () => {
     it('where in varchar', async () => {
         const results = await dalHelper.select({
             table: 'TestTable',
-            whereAnd: [ ['ColNvarchar', ['dd','bb']] ],
+            whereAnd: [['ColNvarchar', ['dd', 'bb']]],
         }).exec();
 
         assert.deepEqual(3, results.length);
@@ -408,7 +405,7 @@ describe('mssql arr ddl', () => {
         }
         const results = await dalHelper.select({
             table: 'TestTable',
-            whereAnd: [['Id', ids ]],
+            whereAnd: [['Id', ids]],
         }).exec();
 
         assert.deepEqual(5, results.length);
@@ -416,27 +413,25 @@ describe('mssql arr ddl', () => {
         return Promise.resolve();
     });
 
-    it('count',async()=>{
+    it('count', async () => {
         const [result] = await dalHelper.count({
             table: 'TestTable',
-            whereAnd: [[ 'Id', [1,2] ]],
+            whereAnd: [['Id', [1, 2]]],
         }).exec();
 
         assert.equal(2, result.Count);
 
         return Promise.resolve();
-    })
+    });
 
-    it('delete',async()=>{
+    it('delete', async () => {
         const affected = await dalHelper.delete({
             table: 'TestTable',
-            whereAnd:[['Id', 1 ]],
+            whereAnd: [['Id', 1]],
         }).exec();
 
         assert.equal(1, affected);
 
         return Promise.resolve();
-    })
-
-    
+    });
 });

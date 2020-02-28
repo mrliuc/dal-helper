@@ -27,6 +27,6 @@ module.exports = {
     'consistent-return':0,//['error',{'treatUndefinedAsUnspecified':true}]
     'no-console':['error',{'allow':['log','warning','error']}],
     'no-underscore-dangle':0,
-    'no-plusplus':['no-plusplus',{'allowForLoopAfterthoughts':true}]
+    'no-plusplus':['error',{'allowForLoopAfterthoughts':true}]
   },
 };
