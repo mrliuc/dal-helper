@@ -1,12 +1,12 @@
 
-**暂支持MSSQL相关操作**
+**支持MSSQL，MySQL**
 
 
 ## Installation&Test
 
 ```js
 $ npm install dal-helper
-$ node ./test.js
+$ npm run test
 ```
 
 
