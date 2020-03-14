@@ -151,6 +151,33 @@ describe('mysql obj ddl', () => {
         return Promise.resolve();
     });
 
+    it('update or insert', async () => {
+        const results = await dalHelper.dmls([{
+            DMLType: dalHelper.DMLType.UPDATE_INSERT,
+            table: 'TestTable',
+            data: { ColInt: 11, ColNvarchar: 'ee' },
+            whereAnd: { Id: 1 },
+        }, {
+            DMLType: dalHelper.DMLType.UPDATE_INSERT,
+            table: 'TestTable',
+            data: { ColInt: 13, ColNvarchar: 'ff' },
+            whereAnd: { ColInt: 13 },
+        }, {
+            DMLType: dalHelper.DMLType.SELECT,
+            table: 'TestTable',
+            whereAnd: { Id: 1 },
+        }, {
+            DMLType: dalHelper.DMLType.SELECT,
+            table: 'TestTable',
+            whereAnd: { ColInt: 13 },
+        }]).exec();
+
+        assert.deepEqual('ee', results[0][0].ColNvarchar);
+        assert.deepEqual('ff', results[1][0].ColNvarchar);
+
+        return Promise.resolve();
+    });
+
     it('where in varchar', async () => {
         const results = await dalHelper.select({
             table: 'TestTable',
@@ -172,7 +199,7 @@ describe('mysql obj ddl', () => {
             whereAnd: { Id: ids },
         }).exec();
 
-        assert.deepEqual(5, results.length);
+        assert.deepEqual(6, results.length);
 
         return Promise.resolve();
     });
