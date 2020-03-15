@@ -425,6 +425,18 @@ describe('mysql arr ddl', () => {
         return Promise.resolve();
     });
 
+    it('where like', async () => {
+        const results = await dalHelper.select({
+            table: 'TestTable',
+            whereAnd: [['ColNvarchar', 'd%', 'like']],
+        }).exec();
+
+        assert.deepEqual(2, results.length);
+
+        return Promise.resolve();
+    });
+
+
     it('where in int', async () => {
         const ids = [];
         for (let i = 1; i < 10000; i++) {
