@@ -226,7 +226,6 @@ describe('mysql obj ddl', () => {
         return Promise.resolve();
     });
 
-
     it('proc sp_GetSequenceNo 100', async () => {
         for (let i = 1; i < 3; i++) {
             for (let j = 1; j < 100; j++) {
@@ -248,7 +247,6 @@ describe('mysql obj ddl', () => {
         return Promise.resolve();
     }).timeout(100000);
 });
-
 
 describe('mysql arr ddl', () => {
     before(async () => {
@@ -435,7 +433,6 @@ describe('mysql arr ddl', () => {
 
         return Promise.resolve();
     });
-
 
     it('where in int', async () => {
         const ids = [];
