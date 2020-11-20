@@ -1,6 +1,6 @@
-var config = require('../mysql_config');
+const config = require('../mysql_config');
 
-var dalHelper = require('../../index').MYSQL.setConfig(config);
+const dalHelper = require('../../index').MYSQL.setConfig(config);
 
 // for (var i = 0; i < 100; i++) {
 
@@ -24,7 +24,6 @@ var dalHelper = require('../../index').MYSQL.setConfig(config);
 //         console.log(b, i)
 //     })(i);
 
-
 //     (async(i) => {
 //         var b = await dalHelper2.select({
 //             columns: ['Account', 'Mobile'],
@@ -41,7 +40,6 @@ var dalHelper = require('../../index').MYSQL.setConfig(config);
 
 // }
 
-
 // (async(i) => {
 //     var b = await dalHelper.query('select top 1 * from UserAccount', function(err, results) {
 //         // console.log(results, 3);
@@ -51,7 +49,6 @@ var dalHelper = require('../../index').MYSQL.setConfig(config);
 //     })
 //     console.log(b, i)
 // })(10);
-
 
 // dalHelper.select({
 //     table: 'Topic',
@@ -75,8 +72,8 @@ var dalHelper = require('../../index').MYSQL.setConfig(config);
 //         ['TopicInfo.CusContactPhone', '18812345678']
 //     ]
 // }).exec().then(res => false && console.log(res))
-var pageNo = 1,
-    pageSize = 1;
+const pageNo = 1;
+const pageSize = 1;
 // dalHelper.select({
 //     table: 'Test',
 //     // whereAnd: { Id: [40, 43, 44] }
@@ -103,12 +100,11 @@ var pageNo = 1,
 //     console.log(results, affected)
 // }, true)
 
-
 dalHelper.select({
     table: 'Test',
     groupColumns: ['count(*) Ctn', 'Name'],
     groupBys: ['Name'],
     whereAnd: { Name: ['43', '55'] },
 }).exec((err, results) => {
-    console.log(err, results)
-}, true)
+    console.log(err, results);
+}, true);
